@@ -1,8 +1,8 @@
-# [Backstage](https://backstage.io)
+# Portal Plugins Example
 
-This is your newly scaffolded Backstage App, Good Luck!
+This repository is a [Backstage](https://backstage.io) Open Source app, containing a set of plugins that are compatible with [Spotify Portal](https://backstage.spotify.com/products/portal/).
 
-To start the app, run:
+## Running the app
 
 ```sh
 yarn install
