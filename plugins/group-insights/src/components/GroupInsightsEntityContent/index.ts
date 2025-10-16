@@ -1,0 +1,1 @@
+export { GroupInsightsEntityContent } from './GroupInsightsEntityContent';
