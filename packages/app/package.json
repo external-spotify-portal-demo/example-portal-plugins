@@ -34,7 +34,7 @@
     "@backstage/plugin-user-settings": "backstage:^",
     "@backstage/theme": "backstage:^",
     "@backstage/ui": "backstage:^",
-    "@internal/plugin-group-insights": "workspace:^",
+    "@internal/plugin-team-insights": "workspace:^",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "react": "^18.0.2",
