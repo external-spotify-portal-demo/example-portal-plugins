@@ -21,9 +21,9 @@ import WarningIcon from '@material-ui/icons/Warning';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import { useStyles } from './GroupInsightsEntityContent.styles';
+import { useStyles } from './TeamInsightsEntityContent.styles';
 
-export const GroupInsightsEntityContent = () => {
+export const TeamInsightsEntityContent = () => {
   const classes = useStyles();
   const [stats] = useState<{
     withDocs: number;

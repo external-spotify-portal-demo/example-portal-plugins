@@ -2,7 +2,7 @@ import '@backstage/cli/asset-types';
 import { createApp } from '@backstage/frontend-defaults';
 import ReactDOM from 'react-dom/client';
 import '@backstage/ui/css/styles.css';
-import groupInsightsPlugin from '../src';
+import teamInsightsPlugin from '../src';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import orgPlugin from '@backstage/plugin-org/alpha';
@@ -61,7 +61,7 @@ const app = createApp({
   features: [
     catalogPlugin,
     catalogPluginOverrides,
-    groupInsightsPlugin,
+    teamInsightsPlugin,
     orgPlugin,
   ],
 });
