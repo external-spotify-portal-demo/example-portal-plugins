@@ -5,8 +5,12 @@ const teamInsightsEntityContent = EntityContentBlueprint.make({
   params: {
     path: '/insights',
     title: 'Team Insights',
-    filter: entity =>
-      entity.metadata.annotations?.['team-insights/enabled'] === 'true',
+    filter: {
+      $all: [
+        { kind: 'group' },
+        { 'spec.type': 'team' },
+      ]
+    },
     loader: () =>
       import('./components/TeamInsightsEntityContent').then(m => (
         <m.TeamInsightsEntityContent />
