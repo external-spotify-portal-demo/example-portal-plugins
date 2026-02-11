@@ -67,4 +67,7 @@ backend.add(
   import('@internal/plugin-catalog-backend-module-team-insights-processor'),
 );
 
+backend.add(
+  import('@internal/plugin-scaffolder-backend-module-example-actions'),
+);
 backend.start();

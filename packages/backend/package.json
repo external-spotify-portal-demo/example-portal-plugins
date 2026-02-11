@@ -44,6 +44,7 @@
     "@backstage/plugin-signals-backend": "backstage:^",
     "@backstage/plugin-techdocs-backend": "backstage:^",
     "@internal/plugin-catalog-backend-module-team-insights-processor": "workspace:^",
+    "@internal/plugin-scaffolder-backend-module-example-actions": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",

@@ -1,0 +1,40 @@
+{
+  "name": "@internal/plugin-scaffolder-backend-module-example-actions",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "The example-actions module for @backstage/plugin-scaffolder-backend",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "backend-plugin-module",
+    "pluginId": "scaffolder",
+    "pluginPackage": "@backstage/plugin-scaffolder-backend"
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "backstage:^",
+    "@backstage/plugin-scaffolder-node": "backstage:^"
+  },
+  "devDependencies": {
+    "@backstage/backend-test-utils": "backstage:^",
+    "@backstage/cli": "backstage:^",
+    "@backstage/plugin-scaffolder-node-test-utils": "backstage:^"
+  },
+  "files": [
+    "dist"
+  ]
+}
