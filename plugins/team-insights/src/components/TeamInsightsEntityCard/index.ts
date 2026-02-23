@@ -1,0 +1,1 @@
+export { TeamInsightsEntityCard } from './TeamInsightsEntityCard';

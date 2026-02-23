@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { InfoCard } from '@backstage/core-components';
+import { useTeamInsightsStats } from '../../hooks';
 import {
   Grid,
   Typography,
@@ -22,48 +22,17 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { useStyles } from './TeamInsightsEntityContent.styles';
+import { FRESHNESS_COLORS, getAgeColor } from '../shared/freshnessColors';
 
 export const TeamInsightsEntityContent = () => {
   const classes = useStyles();
-  const [stats] = useState<{
-    withDocs: number;
-    totalOwned: number;
-    ages: {
-      '0-30': number;
-      '31-90': number;
-      '90+': number;
-    };
-    withoutDocsRefs: string[];
-    stalest: { ref: string; daysOld: number }[];
-  }>({
-    withDocs: 3,
-    totalOwned: 10,
-    ages: {
-      '0-30': 0,
-      '31-90': 0,
-      '90+': 0,
-    },
-    withoutDocsRefs: [],
-    stalest: [],
-  });
+  const stats = useTeamInsightsStats();
 
   const coverage = Math.round((stats.withDocs / stats.totalOwned) * 100) || 0;
-
-  const freshnessColors = {
-    '0-30': '#4caf50',
-    '31-90': '#ff9800',
-    '90+': '#f44336',
-  };
 
   const getFreshnessPercentage = (bucket: '0-30' | '31-90' | '90+') => {
     const total = Math.max(1, stats.withDocs);
     return (stats.ages[bucket] / total) * 100;
-  };
-
-  const getAgeColor = (daysOld: number) => {
-    if (daysOld > 90) return '#f44336';
-    if (daysOld > 30) return '#ff9800';
-    return '#4caf50';
   };
 
   return (
@@ -119,7 +88,7 @@ export const TeamInsightsEntityContent = () => {
                     className={classes.freshnessSegment}
                     style={{
                       width: `${percentage}%`,
-                      backgroundColor: freshnessColors[bucket],
+                      backgroundColor: FRESHNESS_COLORS[bucket],
                     }}
                     title={`${bucket} days: ${count} docs`}
                   >
@@ -133,7 +102,7 @@ export const TeamInsightsEntityContent = () => {
                 <Box key={bucket} className={classes.legendItem}>
                   <Box
                     className={classes.legendDot}
-                    style={{ backgroundColor: freshnessColors[bucket] }}
+                    style={{ backgroundColor: FRESHNESS_COLORS[bucket] }}
                   />
                   <Typography variant="caption">
                     {bucket} days: <strong>{stats.ages[bucket]}</strong>
@@ -179,7 +148,7 @@ export const TeamInsightsEntityContent = () => {
                 />
               </Box>
               <List dense>
-                {stats.withoutDocsRefs.map((ref: string) => (
+                {stats.withoutDocsRefs.map((ref) => (
                   <ListItem key={ref} className={classes.listItem}>
                     <ListItemIcon>
                       <Avatar
@@ -222,7 +191,7 @@ export const TeamInsightsEntityContent = () => {
             </Box>
           ) : (
             <List dense>
-              {stats.stalest.map((item: any) => (
+              {stats.stalest.map((item) => (
                 <Box key={item.ref}>
                   <ListItem className={classes.listItem}>
                     <ListItemIcon>

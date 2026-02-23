@@ -2,7 +2,7 @@
 
 Welcome to the team-insights plugin!
 
-This plugin adds a "Team Insights" tab to the entity page for entities of kind "Group" and type "team".
+This plugin adds a "Team Insights" tab and summary card to the entity page for entities of kind "Group" and type "team".
 
 ## Getting started
 
