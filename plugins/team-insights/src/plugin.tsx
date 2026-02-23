@@ -1,8 +1,14 @@
-import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import {
+  createFrontendPlugin,
+  NavItemBlueprint,
+  PageBlueprint,
+} from '@backstage/frontend-plugin-api';
 import {
   EntityCardBlueprint,
   EntityContentBlueprint,
 } from '@backstage/plugin-catalog-react/alpha';
+import GroupIcon from '@material-ui/icons/Group';
+import { teamInsightsRouteRef } from './routes';
 
 const teamInsightsEntityContent = EntityContentBlueprint.make({
   params: {
@@ -18,6 +24,16 @@ const teamInsightsEntityContent = EntityContentBlueprint.make({
   },
 });
 
+/**
+ *
+ * {
+ *   "entity-card:team-insights": {
+ *     "config": {
+ *       "filter": "kind:component,group"
+ *     }
+ *   }
+ * }
+ */
 const teamInsightsEntityCard = EntityCardBlueprint.make({
   params: {
     filter: {
@@ -30,7 +46,30 @@ const teamInsightsEntityCard = EntityCardBlueprint.make({
   },
 });
 
+const teamInsightsPage = PageBlueprint.make({
+  params: {
+    path: '/team-insights',
+    routeRef: teamInsightsRouteRef,
+    loader: () =>
+      import('./components/TeamInsightsPage').then(m => <m.TeamInsightsPage />),
+  },
+});
+
+const teamInsightsNavItem = NavItemBlueprint.make({
+  params: {
+    title: 'Team Insights',
+    icon: GroupIcon,
+    routeRef: teamInsightsRouteRef,
+  },
+});
+
 export const teamInsightsPlugin = createFrontendPlugin({
   pluginId: 'team-insights',
-  extensions: [teamInsightsEntityContent, teamInsightsEntityCard],
+  routes: { root: teamInsightsRouteRef },
+  extensions: [
+    teamInsightsEntityContent,
+    teamInsightsEntityCard,
+    teamInsightsPage,
+    teamInsightsNavItem,
+  ],
 });

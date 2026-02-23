@@ -18,8 +18,8 @@ export function useTeamInsightsStats(): TeamInsightsStats {
     withDocs: 3,
     totalOwned: 10,
     ages: {
-      '0-30': 0,
-      '31-90': 0,
+      '0-30': 2,
+      '31-90': 1,
       '90+': 0,
     },
     withoutDocsRefs: [],
