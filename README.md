@@ -4,6 +4,8 @@ This repository is a [Backstage](https://backstage.io) Open Source app, containi
 
 ## Plugins
 
+- [catalog-backend-module-azure-devops-entity-provider](plugins/catalog-backend-module-azure-devops-entity-provider): A Backstage catalog provider that creates `Component` entities based on Azure DevOps repositories.
+
 - [catalog-backend-module-team-insights-processor](plugins/catalog-backend-module-team-insights-processor): A Backstage catalog processor that add a `team-insights/enabled` annotation to `Group` entities of type `team`.
 - [team-insights](plugins/team-insights): A Backstage plugin that displays team insights for `Group` entities of type `team`.
 

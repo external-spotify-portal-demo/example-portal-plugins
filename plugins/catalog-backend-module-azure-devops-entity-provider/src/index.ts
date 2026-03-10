@@ -1,0 +1,1 @@
+export {catalogModuleAzureDevOpsEntityProvider as default} from './module';
