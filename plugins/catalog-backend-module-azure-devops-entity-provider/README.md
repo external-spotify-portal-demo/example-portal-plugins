@@ -17,7 +17,7 @@ Install the plugin in your Backstage backend:
 
 ```bash
 # From the root of your Backstage app
-yarn --cwd packages/backend add @backstage/plugin-azure-devops-entity-provider
+yarn --cwd packages/backend add @internal/plugin-catalog-backend-module-azure-devops-entity-provider
 ```
 
 ## Configuration
@@ -29,10 +29,10 @@ catalog:
   providers:
     azureDevOps:
       # Azure DevOps organization URL
-      organization: 'https://dev.azure.com/your-org'
+      organizationName: 'your-org' # Required: e.g. 'your-org' for https://dev.azure.com/your-org
 
       # Personal Access Token with 'Code (read)' permissions
-      personalAccessToken: '${AZURE_DEVOPS_TOKEN}'
+      personalAccessToken: '${AZURE_DEVOPS_TOKEN}' # Optional: if you have integrations.azure configured, you can omit this and it will be inherited from there
 
       # Map projects to their owners
       projectOwnerMap:
@@ -61,7 +61,7 @@ import { CatalogBuilder } from '@backstage/plugin-catalog-backend';
 import { ScaffolderEntitiesProcessor } from '@backstage/plugin-scaffolder-backend';
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
-import { AzureDevOpsEntityProvider } from '@backstage/plugin-azure-devops-entity-provider';
+import { AzureDevOpsEntityProvider } from '@internal/plugin-catalog-backend-module-azure-devops-entity-provider';
 
 export default async function createPlugin(
   env: PluginEnvironment,
@@ -131,14 +131,14 @@ relations:
 
 ## Configuration Options
 
-| Option                | Required | Description                          | Default         |
-| --------------------- | -------- | ------------------------------------ | --------------- |
-| `organization`        | Yes      | Azure DevOps organization URL        | -               |
-| `personalAccessToken` | Yes      | Personal Access Token                | -               |
-| `projectOwnerMap`     | Yes      | Map of project names to owners       | -               |
-| `schedule`            | No       | Cron expression for refresh schedule | `'0 */6 * * *'` |
-| `projectFilter`       | No       | Regex pattern to filter projects     | -               |
-| `repositoryFilter`    | No       | Regex pattern to filter repositories | -               |
+| Option                | Required | Description                                                                | Default         |
+| --------------------- | -------- | -------------------------------------------------------------------------- | --------------- |
+| `organizationName`    | Yes      | Azure DevOps organization URL                                              | -               |
+| `personalAccessToken` | No       | Personal Access Token. Inherited from `integrations.azure` if not provided | -               |
+| `projectOwnerMap`     | No       | Map of project names to owners                                             | -               |
+| `schedule`            | No       | Cron expression for refresh schedule                                       | `'0 */6 * * *'` |
+| `projectFilter`       | No       | Regex pattern to filter projects                                           | -               |
+| `repositoryFilter`    | No       | Regex pattern to filter repositories                                       | -               |
 
 ## Project Owner Mapping
 

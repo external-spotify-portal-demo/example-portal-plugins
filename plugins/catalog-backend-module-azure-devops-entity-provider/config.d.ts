@@ -20,29 +20,39 @@ export interface Config {
     providers?: {
       azureDevOpsRepo?: {
         /**
-         * Azure DevOps organization URL
+         * Azure DevOps organization name
          * @visibility frontend
          */
-        organization: string;
+        organizationName: string;
+
         /**
-         * Personal Access Token for authentication
+         * Optional hostname of the Azure DevOps instance (e.g., dev.azure.com)
+         */
+        host?: string;
+
+        /**
+         * Optional personal access token for authenticating with Azure DevOps.
+         * If not provided, the provider will attempt to read the token from the backend integration configuration for Azure DevOps (integrations.azure).
+         *
          * @visibility secret
          */
-        personalAccessToken: string;
+        personalAccessToken?: string;
+
         /**
          * Map of project names to owner groups/users
          * @visibility frontend
          */
-        projectOwnerMap?: { 
+        projectOwnerMap?: {
           projectName: string;
           owner: string;
         }[];
         /**
          * Schedule configuration (optional - can be provided via backend integration)
+         * If not provided, a default schedule of every 60 minutes with a timeout of 50 minutes will be used.
          * @visibility frontend
          */
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };
   };
-} 
+}

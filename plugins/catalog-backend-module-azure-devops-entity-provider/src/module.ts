@@ -2,14 +2,14 @@
 // Example: Backend module for the new Backstage backend system
 // Add this to your backend in packages/backend/src/index.ts
 
-import { createBackend } from "@backstage/backend-defaults";
+import { createBackend } from '@backstage/backend-defaults';
 import {
   createBackendModule,
   coreServices,
   readSchedulerServiceTaskScheduleDefinitionFromConfig,
-} from "@backstage/backend-plugin-api";
-import { catalogProcessingExtensionPoint } from "@backstage/plugin-catalog-node/alpha";
-import { AzureDevOpsRepoEntityProvider } from "./providers/AzureDevOpsEntityProvider";
+} from '@backstage/backend-plugin-api';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
+import { AzureDevOpsRepoEntityProvider } from './providers/AzureDevOpsEntityProvider';
 
 /**
  * Catalog backend module for the Azure DevOps repository entity provider.
@@ -17,8 +17,8 @@ import { AzureDevOpsRepoEntityProvider } from "./providers/AzureDevOpsEntityProv
  * @alpha
  */
 export const catalogModuleAzureDevOpsEntityProvider = createBackendModule({
-  pluginId: "catalog",
-  moduleId: "azure-devops-repo-entity-provider",
+  pluginId: 'catalog',
+  moduleId: 'azure-devops-repo-entity-provider',
   register(env) {
     env.registerInit({
       deps: {
@@ -28,25 +28,43 @@ export const catalogModuleAzureDevOpsEntityProvider = createBackendModule({
         scheduler: coreServices.scheduler,
       },
       async init({ catalog, config, logger, scheduler }) {
-        logger.info("Initializing Azure DevOps Repo Entity Provider");
+        logger.info('Initializing Azure DevOps Repo Entity Provider');
         const providerConfig = config.getConfig(
-          "catalog.providers.azureDevOpsRepo"
+          'catalog.providers.azureDevOpsRepo',
         );
 
-        const schedule = providerConfig.has("schedule")
+        const schedule = providerConfig.has('schedule')
           ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
-              providerConfig.getConfig("schedule")
+              providerConfig.getConfig('schedule'),
             )
           : {
               frequency: { minutes: 60 },
               timeout: { minutes: 50 },
             };
-        catalog.addEntityProvider(
-          AzureDevOpsRepoEntityProvider.fromConfig(config, {
-            logger,
-            schedule: scheduler.createScheduledTaskRunner(schedule),
-          })
-        );
+
+        const host =
+          providerConfig.getOptionalString('host') || 'dev.azure.com';
+        const token =
+          providerConfig.getOptionalString('personalAccessToken') ||
+          config
+            .getConfigArray('integrations.azure')
+            .find(c => c.getString('host') === host)
+            ?.getString('token');
+
+        if (token) {
+          catalog.addEntityProvider(
+            AzureDevOpsRepoEntityProvider.fromConfig(config, {
+              logger,
+              schedule: scheduler.createScheduledTaskRunner(schedule),
+              token,
+              host,
+            }),
+          );
+        } else {
+          logger.warn(
+            `Azure DevOps Repo Entity Provider is enabled but no token was found for host ${host}. Please check your configuration.`,
+          );
+        }
       },
     });
   },

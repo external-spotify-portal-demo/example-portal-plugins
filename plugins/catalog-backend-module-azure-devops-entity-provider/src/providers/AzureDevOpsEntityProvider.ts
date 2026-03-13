@@ -1,20 +1,21 @@
-import { Entity } from "@backstage/catalog-model";
+import { Entity } from '@backstage/catalog-model';
 import {
   EntityProvider,
   EntityProviderConnection,
-} from "@backstage/plugin-catalog-node";
-import { Config } from "@backstage/config";
-import { Logger } from "winston";
-import { WebApi, getPersonalAccessTokenHandler } from "azure-devops-node-api";
-import { GitRepository } from "azure-devops-node-api/interfaces/GitInterfaces";
-import { TeamProject } from "azure-devops-node-api/interfaces/CoreInterfaces";
-import { GitItem } from "azure-devops-node-api/interfaces/GitInterfaces";
-import { SchedulerServiceTaskRunner } from "@backstage/backend-plugin-api";
+} from '@backstage/plugin-catalog-node';
+import { Config } from '@backstage/config';
+import { Logger } from 'winston';
+import { WebApi, getPersonalAccessTokenHandler } from 'azure-devops-node-api';
+import { GitRepository } from 'azure-devops-node-api/interfaces/GitInterfaces';
+import { TeamProject } from 'azure-devops-node-api/interfaces/CoreInterfaces';
+import { GitItem } from 'azure-devops-node-api/interfaces/GitInterfaces';
+import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 
 export interface AzureDevOpsRepoEntityProviderConfig {
-  organization: string;
+  organizationName: string;
   personalAccessToken: string;
-  projectOwnerMap: Config[];
+  projectOwnerMap?: Config[];
+  host: string;
 }
 
 export class AzureDevOpsRepoEntityProvider implements EntityProvider {
@@ -28,23 +29,26 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
     options: {
       logger: Logger;
       schedule: SchedulerServiceTaskRunner;
-    }
+      token: string;
+      host: string;
+    },
   ): AzureDevOpsRepoEntityProvider {
     const providerConfig = config.getConfig(
-      "catalog.providers.azureDevOpsRepo"
+      'catalog.providers.azureDevOpsRepo',
     );
 
-    const organization = providerConfig.getString("organization");
-    const personalAccessToken = providerConfig.getString("personalAccessToken");
-    const projectOwnerMap = providerConfig.getConfigArray("projectOwnerMap");
+    const organizationName = providerConfig.getString('organizationName');
+    const projectOwnerMap =
+      providerConfig.getOptionalConfigArray('projectOwnerMap');
 
     return new AzureDevOpsRepoEntityProvider(
       {
-        organization,
-        personalAccessToken,
+        organizationName,
+        personalAccessToken: options.token,
         projectOwnerMap,
+        host: options.host,
       },
-      options
+      options,
     );
   }
 
@@ -53,14 +57,15 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
     options: {
       logger: Logger;
       schedule: SchedulerServiceTaskRunner;
-    }
+      host: string;
+    },
   ) {
     this.config = config;
     this.logger = options.logger.child({
       target: this.getProviderName(),
     });
     this.schedule = options.schedule;
-    this.logger.info("Azure DevOps Repo Entity Provider initialized");
+    this.logger.info('Azure DevOps Repo Entity Provider initialized');
   }
 
   getProviderName(): string {
@@ -79,17 +84,17 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
   async run(): Promise<void> {
     if (!this.connection) {
-      throw new Error("Not initialized");
+      throw new Error('Not initialized');
     }
 
-    this.logger.info("Discovering Azure DevOps repositories");
+    this.logger.info('Discovering Azure DevOps repositories');
 
     try {
       const entities = await this.discoverRepositories();
 
       await this.connection.applyMutation({
-        type: "full",
-        entities: entities.map((entity) => ({
+        type: 'full',
+        entities: entities.map(entity => ({
           entity,
           locationKey: this.getProviderName(),
         })),
@@ -97,16 +102,19 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
       this.logger.info(`Discovered ${entities.length} repositories`);
     } catch (error) {
-      this.logger.error("Failed to discover repositories", error);
+      this.logger.error('Failed to discover repositories', error);
       throw error;
     }
   }
 
   private async discoverRepositories(): Promise<Entity[]> {
     const authHandler = getPersonalAccessTokenHandler(
-      this.config.personalAccessToken
+      this.config.personalAccessToken,
     );
-    const connection = new WebApi(this.config.organization, authHandler);
+    const connection = new WebApi(
+      `https://${this.config.host}/${this.config.organizationName}`,
+      authHandler,
+    );
 
     const coreApi = await connection.getCoreApi();
     const gitApi = await connection.getGitApi();
@@ -128,14 +136,14 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
         const repositories = await gitApi.getRepositories(project.id);
 
         this.logger.debug(
-          `Found ${repositories.length} repositories in project ${project.name}`
+          `Found ${repositories.length} repositories in project ${project.name}`,
         );
 
         for (const repo of repositories) {
-          // Skip repositories that already have catalog-info.yaml if configured to do so
+          // Skip repositories that already have catalog-info.yaml
           if (await this.hasCatalogInfoFile(gitApi, repo.id!)) {
             this.logger.debug(
-              `Skipping repository ${repo.name} in project ${project.name} - catalog-info.yaml already exists`
+              `Skipping repository ${repo.name} in project ${project.name} - catalog-info.yaml already exists`,
             );
             continue;
           }
@@ -148,7 +156,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
       } catch (error) {
         this.logger.warn(
           `Failed to get repositories for project ${project.name}`,
-          error
+          error,
         );
       }
     }
@@ -158,20 +166,20 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
   private async hasCatalogInfoFile(
     gitApi: any,
-    repositoryId: string
+    repositoryId: string,
   ): Promise<boolean> {
     try {
       // Check for catalog-info.yaml in the root of the repository
       const items = await gitApi.getItems(repositoryId, {
-        path: "/",
-        recursionLevel: "None",
+        path: '/',
+        recursionLevel: 'None',
       });
 
       // Look for catalog-info.yaml or catalog-info.yml files
       const catalogInfoFiles = items.filter(
         (item: GitItem) =>
-          item.path === "/catalog-info.yaml" ||
-          item.path === "/catalog-info.yml"
+          item.path === '/catalog-info.yaml' ||
+          item.path === '/catalog-info.yml',
       );
 
       return catalogInfoFiles.length > 0;
@@ -180,7 +188,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
       // This prevents blocking the entire process due to permission issues
       this.logger.debug(
         `Could not check for catalog-info files in repository ${repositoryId}:`,
-        error
+        error,
       );
       return false;
     }
@@ -188,7 +196,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
   private createRepositoryEntity(
     repository: GitRepository,
-    project: TeamProject
+    project: TeamProject,
   ): Entity | null {
     if (!repository.id || !repository.name || !project.name) {
       return null;
@@ -196,42 +204,42 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
     const owner =
       this.config.projectOwnerMap
-        .find((p) => p.getString("projectName") === project.name)
-        ?.getString("owner") || "unknown";
+        ?.find(p => p.getString('projectName') === project.name)
+        ?.getString('owner') || 'unknown';
     const repoUrl = repository.remoteUrl || repository.webUrl;
 
     if (!repoUrl) {
       this.logger.warn(
-        `No URL found for repository ${repository.name} in project ${project.name}`
+        `No URL found for repository ${repository.name} in project ${project.name}`,
       );
       return null;
     }
 
     const entity: Entity = {
-      apiVersion: "backstage.io/v1alpha1",
-      kind: "Component",
+      apiVersion: 'backstage.io/v1alpha1',
+      kind: 'Component',
       metadata: {
-        name: `${repository.name.toLowerCase().replace(/[^a-z0-9-]/g, "-")}`,
+        name: `${repository.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`,
         title: repository.name,
         description: `Repository ${repository.name} in Azure DevOps project ${project.name}`,
         annotations: {
-          "azure-devops.com/project-repo": `${project.name}/${repository.name}`,
-          "backstage.io/managed-by-location": `azure-devops:${this.config.organization}`,
-          "backstage.io/managed-by-origin-location": `azure-devops:${this.config.organization}`,
-          "backstage.io/source-location": `url:${repoUrl}/`,
+          'azure-devops.com/project-repo': `${project.name}/${repository.name}`,
+          'backstage.io/managed-by-location': `azure-devops:${this.config.organizationName}`,
+          'backstage.io/managed-by-origin-location': `azure-devops:${this.config.organizationName}`,
+          'backstage.io/source-location': `url:${repoUrl}/`,
         },
-        tags: ["azure-devops", project.name.toLowerCase()],
+        tags: ['azure-devops', project.name.toLowerCase()],
         links: [
           {
             url: repoUrl,
-            title: "Repository",
-            icon: "code",
+            title: 'Repository',
+            icon: 'code',
           },
         ],
       },
       spec: {
-        type: "repository",
-        lifecycle: "experimental",
+        type: 'repository',
+        lifecycle: 'experimental',
         owner,
       },
     };
