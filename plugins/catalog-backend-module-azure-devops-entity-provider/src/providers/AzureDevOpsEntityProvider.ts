@@ -141,7 +141,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
 
         for (const repo of repositories) {
           // Skip repositories that already have catalog-info.yaml
-          if (await this.hasCatalogInfoFile(gitApi, repo.id!)) {
+          if (repo.id && (await this.hasCatalogInfoFile(gitApi, repo.id))) {
             this.logger.debug(
               `Skipping repository ${repo.name} in project ${project.name} - catalog-info.yaml already exists`,
             );
@@ -226,7 +226,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
           'azure-devops.com/project-repo': `${project.name}/${repository.name}`,
           'backstage.io/managed-by-location': `azure-devops:${this.config.organizationName}`,
           'backstage.io/managed-by-origin-location': `azure-devops:${this.config.organizationName}`,
-          'backstage.io/source-location': `url:${repoUrl}/`,
+          'backstage.io/source-location': `url:${repoUrl}`,
         },
         tags: ['azure-devops', project.name.toLowerCase()],
         links: [
