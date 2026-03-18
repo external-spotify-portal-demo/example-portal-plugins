@@ -223,7 +223,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
         title: repository.name,
         description: `Repository ${repository.name} in Azure DevOps project ${project.name}`,
         annotations: {
-          'azure-devops.com/project-repo': `${project.name}/${repository.name}`,
+          'dev.azure.com/project-repo': `${project.name}/${repository.name}`,
           'backstage.io/managed-by-location': `azure-devops:${this.config.organizationName}`,
           'backstage.io/managed-by-origin-location': `azure-devops:${this.config.organizationName}`,
           'backstage.io/source-location': `url:${repoUrl}`,
