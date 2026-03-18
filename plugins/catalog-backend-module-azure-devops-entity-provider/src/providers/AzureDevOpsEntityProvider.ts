@@ -228,7 +228,7 @@ export class AzureDevOpsRepoEntityProvider implements EntityProvider {
           'backstage.io/managed-by-origin-location': `azure-devops:${this.config.organizationName}`,
           'backstage.io/source-location': `url:${repoUrl}`,
         },
-        tags: ['azure-devops', project.name.toLowerCase()],
+        tags: ['azure-devops'],
         links: [
           {
             url: repoUrl,
