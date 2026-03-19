@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Playground
+metadata:
+  name: my-sandbox
+  description: A sandbox environment for experimentation
+spec:
+  type: sandbox
+  lifecycle: active
+  owner: user:default/guest
