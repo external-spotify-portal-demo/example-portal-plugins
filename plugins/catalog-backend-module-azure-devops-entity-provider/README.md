@@ -52,36 +52,6 @@ catalog:
       repositoryFilter: '^(?!archive-).*'
 ```
 
-## Backend Integration
-
-Add the provider to your backend in `packages/backend/src/plugins/catalog.ts`:
-
-```typescript
-import { CatalogBuilder } from '@backstage/plugin-catalog-backend';
-import { ScaffolderEntitiesProcessor } from '@backstage/plugin-scaffolder-backend';
-import { Router } from 'express';
-import { PluginEnvironment } from '../types';
-import { AzureDevOpsEntityProvider } from '@internal/plugin-catalog-backend-module-azure-devops-entity-provider';
-
-export default async function createPlugin(
-  env: PluginEnvironment,
-): Promise<Router> {
-  const builder = await CatalogBuilder.create(env);
-
-  // Add the Azure DevOps entity provider
-  builder.addEntityProvider(
-    AzureDevOpsEntityProvider.fromConfig(env.config, {
-      logger: env.logger,
-    }),
-  );
-
-  builder.addProcessor(new ScaffolderEntitiesProcessor());
-  const { processingEngine, router } = await builder.build();
-  await processingEngine.start();
-  return router;
-}
-```
-
 ## Environment Variables
 
 Set the following environment variable:

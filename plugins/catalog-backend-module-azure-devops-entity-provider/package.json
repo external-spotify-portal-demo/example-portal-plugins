@@ -1,6 +1,6 @@
 {
   "name": "@internal/plugin-catalog-backend-module-azure-devops-entity-provider",
-  "version": "0.1.30",
+  "version": "0.1.38",
   "description": "Backstage entity provider for Azure DevOps repositories",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -27,6 +27,7 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "backstage:^",
     "@backstage/catalog-model": "backstage:^",
+    "@backstage/config": "backstage:^",
     "@backstage/plugin-catalog-node": "backstage:^",
     "@backstage/types": "backstage:^",
     "azure-devops-node-api": "^12.0.0",
