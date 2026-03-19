@@ -67,4 +67,5 @@ backend.add(
   import('@internal/plugin-catalog-backend-module-team-insights-processor'),
 );
 
+backend.add(import('@internal/backstage-plugin-catalog-backend-module-playground-kind'));
 backend.start();
