@@ -1,0 +1,221 @@
+---
+# Users
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: alice-johnson
+  description: Senior Backend Engineer
+spec:
+  profile:
+    displayName: Alice Johnson
+    email: alice.johnson@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Alice
+  memberOf: [platform-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: bob-smith
+  description: Frontend Engineer
+spec:
+  profile:
+    displayName: Bob Smith
+    email: bob.smith@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Bob
+  memberOf: [frontend-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: carol-williams
+  description: Staff Engineer
+spec:
+  profile:
+    displayName: Carol Williams
+    email: carol.williams@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Carol
+  memberOf: [platform-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: dave-martinez
+  description: Engineering Manager
+spec:
+  profile:
+    displayName: Dave Martinez
+    email: dave.martinez@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Dave
+  memberOf: [data-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: emma-chen
+  description: Data Engineer
+spec:
+  profile:
+    displayName: Emma Chen
+    email: emma.chen@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Emma
+  memberOf: [data-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: frank-nguyen
+  description: DevOps Engineer
+spec:
+  profile:
+    displayName: Frank Nguyen
+    email: frank.nguyen@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Frank
+  memberOf: [infra-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: grace-kim
+  description: Security Engineer
+spec:
+  profile:
+    displayName: Grace Kim
+    email: grace.kim@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Grace
+  memberOf: [infra-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: henry-brown
+  description: Mobile Engineer
+spec:
+  profile:
+    displayName: Henry Brown
+    email: henry.brown@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Henry
+  memberOf: [mobile-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: iris-patel
+  description: QA Engineer
+spec:
+  profile:
+    displayName: Iris Patel
+    email: iris.patel@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Iris
+  memberOf: [mobile-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: jack-wilson
+  description: Full Stack Engineer
+spec:
+  profile:
+    displayName: Jack Wilson
+    email: jack.wilson@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Jack
+  memberOf: [frontend-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: karen-lee
+  description: ML Engineer
+spec:
+  profile:
+    displayName: Karen Lee
+    email: karen.lee@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Karen
+  memberOf: [data-team]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: liam-taylor
+  description: SRE
+spec:
+  profile:
+    displayName: Liam Taylor
+    email: liam.taylor@example.com
+    picture: https://api.dicebear.com/9.x/avataaars/svg?seed=Liam
+  memberOf: [infra-team]
+---
+# Organization
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: acme-corp
+  description: Acme Corporation
+spec:
+  type: organization
+  children: [engineering]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: engineering
+  description: Engineering Department
+spec:
+  type: department
+  parent: acme-corp
+  children: [platform-team, frontend-team, data-team, infra-team, mobile-team]
+---
+# Teams
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-team
+  description: Core platform services and APIs
+spec:
+  type: team
+  parent: engineering
+  children: []
+  members: [alice-johnson, carol-williams]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: frontend-team
+  description: Web frontend and user experience
+spec:
+  type: team
+  parent: engineering
+  children: []
+  members: [bob-smith, jack-wilson]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: data-team
+  description: Data pipelines, analytics, and ML
+spec:
+  type: team
+  parent: engineering
+  children: []
+  members: [dave-martinez, emma-chen, karen-lee]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: infra-team
+  description: Infrastructure, DevOps, and security
+spec:
+  type: team
+  parent: engineering
+  children: []
+  members: [frank-nguyen, grace-kim, liam-taylor]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: mobile-team
+  description: iOS and Android applications
+spec:
+  type: team
+  parent: engineering
+  children: []
+  members: [henry-brown, iris-patel]
