@@ -47,8 +47,8 @@ export const catalogModuleAzureDevOpsEntityProvider = createBackendModule({
         const token =
           providerConfig.getOptionalString('personalAccessToken') ||
           config
-            .getConfigArray('integrations.azure')
-            .find(c => c.getString('host') === host)
+            .getOptionalConfigArray('integrations.azure')
+            ?.find(c => c.getString('host') === host)
             ?.getOptionalConfigArray('credentials')
             ?.find(c => c.getOptionalString('personalAccessToken'))
             ?.getString('personalAccessToken');
