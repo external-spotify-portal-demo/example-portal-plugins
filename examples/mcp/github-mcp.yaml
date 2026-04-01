@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  title: GitHub MCP Server
+  name: github-mcp
+  description: This server provides access to Github.
+  annotations:
+    mcp.spotify.com/schema-version: '2025-09-29'
+    mcp.spotify.com/auth-api-id: 'core.auth.github'
+    mcp.spotify.com/auth-scopes: '["repo","read:packages","read:org"]'
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: group:portal/admins
+  definition: |
+    name: com.spotify/github-mcp
+    description: "This server provides access to Github."
+    version: "0.0.1"
+    remotes:
+      - type: streamable-http
+        url: "https://api.githubcopilot.com/mcp"
