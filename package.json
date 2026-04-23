@@ -22,6 +22,15 @@
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new"
   },
+  "backstage": {
+    "cli": {
+      "new": {
+        "globals": {
+          "license": "UNLICENSED"
+        }
+      }
+    }
+  },
   "workspaces": {
     "packages": [
       "packages/*",
@@ -30,6 +39,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "backstage:^",
+    "@backstage/cli-defaults": "backstage:^",
     "@backstage/e2e-test-utils": "backstage:^",
     "@jest/environment-jsdom-abstract": "^30.0.0",
     "@playwright/test": "^1.32.3",
