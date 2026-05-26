@@ -1,0 +1,23 @@
+@layer components {
+  .card {
+    overflow: hidden;
+    border-top: 3px solid var(--accent-color, var(--bui-border-1));
+    transition: box-shadow 0.15s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--bui-radius-2);
+    background-color: var(--accent-bg, var(--bui-bg-neutral-1));
+    color: var(--accent-color, var(--bui-fg-primary));
+    flex-shrink: 0;
+  }
+}

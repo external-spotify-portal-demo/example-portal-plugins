@@ -1,0 +1,1 @@
+export { TechRadarPage } from './TechRadarPage';

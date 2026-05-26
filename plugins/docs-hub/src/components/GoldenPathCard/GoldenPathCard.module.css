@@ -1,0 +1,30 @@
+@layer components {
+  .card {
+    overflow: hidden;
+    border-top: 3px solid var(--bui-ring);
+    transition: box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .body {
+    flex: 1;
+  }
+
+  .iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--bui-radius-2);
+    background-color: color-mix(in srgb, var(--bui-ring) 12%, transparent);
+    color: var(--bui-ring);
+    flex-shrink: 0;
+  }
+}

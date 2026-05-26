@@ -1,0 +1,1 @@
+export { GoldenPathPage } from './GoldenPathPage';
