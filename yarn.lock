@@ -4489,6 +4489,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@internal/backstage-plugin-catalog-backend-module-kubernetes-selector@workspace:plugins/catalog-backend-module-kubernetes-selector":
+  version: 0.0.0-use.local
+  resolution: "@internal/backstage-plugin-catalog-backend-module-kubernetes-selector@workspace:plugins/catalog-backend-module-kubernetes-selector"
+  dependencies:
+    "@backstage/backend-plugin-api": "backstage:^"
+    "@backstage/backend-test-utils": "backstage:^"
+    "@backstage/catalog-model": "backstage:^"
+    "@backstage/cli": "backstage:^"
+    "@backstage/plugin-catalog-node": "backstage:^"
+  languageName: unknown
+  linkType: soft
+
 "@internal/backstage-plugin-catalog-backend-module-playground-kind@workspace:plugins/catalog-backend-module-playground-kind":
   version: 0.0.0-use.local
   resolution: "@internal/backstage-plugin-catalog-backend-module-playground-kind@workspace:plugins/catalog-backend-module-playground-kind"
