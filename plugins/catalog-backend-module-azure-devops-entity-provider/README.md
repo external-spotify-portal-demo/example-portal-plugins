@@ -11,6 +11,16 @@ A Backstage entity provider that automatically discovers and imports repositorie
 - 🏷️ Rich metadata including tags, links, and annotations
 - 🔗 Owner relationships using Backstage relations
 
+## Getting Started (Spotify Portal)
+
+You can try out the module via [Portal Studio](https://backstage.spotify.com/docs/portal/portal-plugins/portal-studio) from the root of the repository:
+
+```sh
+npx @spotify/portal-cli@latest studio start --instance <your-instance-name> plugins/catalog-backend-module-azure-devops-entity-provider
+```
+
+Since this is a catalog backend module, Portal Studio will start a local catalog. You will need to configure catalog locations manually in your `app-config.local.yaml` and will not see entities from the production Portal instance.
+
 ## Installation
 
 Install the plugin in your Backstage backend:

@@ -26,6 +26,16 @@ spec:
 | `lifecycle` | string | yes      | `active`, `expired`     | Current lifecycle state          |
 | `owner`     | string | yes      | entity reference        | Owner (User or Group entity ref) |
 
+## Getting Started (Spotify Portal)
+
+You can try out the module via [Portal Studio](https://backstage.spotify.com/docs/portal/portal-plugins/portal-studio) from the root of the repository:
+
+```sh
+npx @spotify/portal-cli@latest studio start --instance <your-instance-name> plugins/catalog-backend-module-playground-kind
+```
+
+Since this is a catalog backend module, Portal Studio will start a local catalog. You will need to configure catalog locations manually in your `app-config.local.yaml` and will not see entities from the production Portal instance.
+
 ## Installation
 
 Add the module to your backend in `packages/backend/src/index.ts`:
