@@ -16,9 +16,9 @@ export const GoldenPathPage = () => {
     const { items } = await catalogApi.queryEntities({
       filter: {
         'metadata.annotations.backstage.io/techdocs-ref': CATALOG_FILTER_EXISTS,
+        'spec.system': 'golden-paths',
       },
       orderFields: [{ field: 'metadata.name', order: 'asc' }],
-      limit: 6,
     });
     return items;
   }, [catalogApi]);

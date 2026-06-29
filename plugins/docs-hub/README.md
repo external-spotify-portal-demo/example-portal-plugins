@@ -5,7 +5,7 @@ A curated documentation hub plugin for Backstage, providing a single entry point
 ## Features
 
 - **Overview** — A landing page with cards linking to key documentation areas: getting started, team & culture, security, architecture, tooling, and support.
-- **Golden Paths** — Lists all catalog entities with TechDocs, displayed as cards with owner and tag metadata.
+- **Golden Paths** — Lists all catalog entities in the `golden-paths` system that have TechDocs, displayed as cards with owner and tag metadata.
 - **Tech Radar** — Embeds the `@backstage-community/plugin-tech-radar` component to visualize technology adoption status.
 
 ## Getting started
