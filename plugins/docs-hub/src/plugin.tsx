@@ -5,7 +5,6 @@ import {
 } from '@backstage/frontend-plugin-api';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import { rootRouteRef } from './routes';
-import { techRadarApi } from '@backstage-community/plugin-tech-radar/alpha';
 
 const docsHubPage = PageBlueprint.make({
   params: {
@@ -54,6 +53,5 @@ export const docsHubPlugin = createFrontendPlugin({
     overviewSubPage,
     goldenPathsSubPage,
     techRadarSubPage,
-    techRadarApi,
   ],
 });

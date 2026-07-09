@@ -1,6 +1,5 @@
 import {
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import {
@@ -55,21 +54,13 @@ const teamInsightsPage = PageBlueprint.make({
   },
 });
 
-const teamInsightsNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'Team Insights',
-    icon: GroupIcon,
-    routeRef: teamInsightsRouteRef,
-  },
-});
-
 export const teamInsightsPlugin = createFrontendPlugin({
   pluginId: 'team-insights',
+  icon: <GroupIcon />,
   routes: { root: teamInsightsRouteRef },
   extensions: [
     teamInsightsEntityContent,
     teamInsightsEntityCard,
     teamInsightsPage,
-    teamInsightsNavItem,
   ],
 });

@@ -11,7 +11,10 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "team-insights"
+    "pluginId": "team-insights",
+    "pluginPackages": [
+      "@internal/plugin-team-insights"
+    ]
   },
   "sideEffects": false,
   "scripts": {
