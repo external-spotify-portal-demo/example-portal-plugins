@@ -1,28 +1,14 @@
-// plugins/team-insights/src/hooks/useTeamInsightsStats.ts
+import { useApi } from '@backstage/frontend-plugin-api';
+import { useAsync } from 'react-use';
+import { teamInsightsApiRef } from '../api';
 
-export type TeamInsightsStats = {
-  withDocs: number;
-  totalOwned: number;
-  ages: {
-    '0-30': number;
-    '31-90': number;
-    '90+': number;
-  };
-  withoutDocsRefs: string[];
-  stalest: { ref: string; daysOld: number }[];
-};
+export type { TeamInsightsStats } from '../api';
 
-// TODO: replace with real data fetching
-export function useTeamInsightsStats(): TeamInsightsStats {
-  return {
-    withDocs: 3,
-    totalOwned: 10,
-    ages: {
-      '0-30': 2,
-      '31-90': 1,
-      '90+': 0,
-    },
-    withoutDocsRefs: [],
-    stalest: [],
-  };
+export function useTeamInsightsStats(teamRef: string) {
+  const api = useApi(teamInsightsApiRef);
+  const { value: stats, loading, error } = useAsync(
+    () => api.getStatsByTeamRef(teamRef),
+    [api, teamRef],
+  );
+  return { stats, loading, error };
 }

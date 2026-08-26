@@ -1,6 +1,9 @@
 import {
   createFrontendPlugin,
   PageBlueprint,
+  ApiBlueprint,
+  discoveryApiRef,
+  fetchApiRef,
 } from '@backstage/frontend-plugin-api';
 import {
   EntityCardBlueprint,
@@ -8,6 +11,17 @@ import {
 } from '@backstage/plugin-catalog-react/alpha';
 import GroupIcon from '@material-ui/icons/Group';
 import { teamInsightsRouteRef } from './routes';
+import { teamInsightsApiRef, TeamInsightsClient } from './api';
+
+const teamInsightsApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams({
+      api: teamInsightsApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new TeamInsightsClient({ discoveryApi, fetchApi }),
+    }),
+});
 
 const teamInsightsEntityContent = EntityContentBlueprint.make({
   params: {
@@ -60,6 +74,7 @@ export const teamInsightsPlugin = createFrontendPlugin({
   pluginId: 'team-insights',
   routes: { root: teamInsightsRouteRef },
   extensions: [
+    teamInsightsApi,
     teamInsightsEntityContent,
     teamInsightsEntityCard,
     teamInsightsPage,
