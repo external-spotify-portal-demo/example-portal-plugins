@@ -49,6 +49,8 @@ const teamInsightsPage = PageBlueprint.make({
   params: {
     path: '/team-insights',
     routeRef: teamInsightsRouteRef,
+    title: 'Team Insights',
+    icon: <GroupIcon />,
     loader: () =>
       import('./components/TeamInsightsPage').then(m => <m.TeamInsightsPage />),
   },
@@ -56,7 +58,6 @@ const teamInsightsPage = PageBlueprint.make({
 
 export const teamInsightsPlugin = createFrontendPlugin({
   pluginId: 'team-insights',
-  icon: <GroupIcon />,
   routes: { root: teamInsightsRouteRef },
   extensions: [
     teamInsightsEntityContent,
