@@ -4,10 +4,13 @@ This repository is a [Backstage](https://backstage.io) Open Source app, containi
 
 ## Plugins
 
-- [catalog-backend-module-azure-devops-entity-provider](plugins/catalog-backend-module-azure-devops-entity-provider): A Backstage catalog provider that creates `Component` entities based on Azure DevOps repositories.
-
-- [catalog-backend-module-team-insights-processor](plugins/catalog-backend-module-team-insights-processor): A Backstage catalog processor that add a `team-insights/enabled` annotation to `Group` entities of type `team`.
-- [team-insights](plugins/team-insights): A Backstage plugin that displays team insights for `Group` entities of type `team`.
+- [catalog-backend-module-allowed-entity-origin-processor](plugins/catalog-backend-module-allowed-entity-origin-processor): A catalog processor that restricts entity ingestion based on kind, type, and source origin location.
+- [catalog-backend-module-azure-devops-entity-provider](plugins/catalog-backend-module-azure-devops-entity-provider): A catalog provider that creates `Component` entities based on Azure DevOps repositories.
+- [catalog-backend-module-kubernetes-selector](plugins/catalog-backend-module-kubernetes-selector): A catalog processor that automatically sets the `backstage.io/kubernetes-label-selector` annotation on `Component` entities.
+- [catalog-backend-module-playground-kind](plugins/catalog-backend-module-playground-kind): A catalog processor that extends the catalog model with a `Playground` entity kind.
+- [catalog-backend-module-team-insights-processor](plugins/catalog-backend-module-team-insights-processor): A catalog processor that adds a `team-insights/enabled` annotation to `Group` entities of type `team`.
+- [docs-hub](plugins/docs-hub): A curated documentation hub plugin providing a single entry point for engineering guides, golden paths, and the tech radar.
+- [team-insights](plugins/team-insights): A plugin that displays team insights for `Group` entities of type `team`.
 
 ## Trying the Plugins
 
