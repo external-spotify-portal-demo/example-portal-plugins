@@ -1,19 +1,19 @@
 import { makeStyles } from '@material-ui/core';
 
 export const useStyles = makeStyles(theme => ({
-  coverageCard: {
+  ownershipCard: {
     height: '100%',
     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
     color: theme.palette.common.white,
   },
-  coverageContent: {
+  ownershipContent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     padding: theme.spacing(4),
   },
-  percentageCircle: {
+  totalCircle: {
     width: 120,
     height: 120,
     borderRadius: '50%',
@@ -22,15 +22,14 @@ export const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(2),
-    position: 'relative',
   },
-  statsRow: {
+  kindRow: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
   },
-  freshnessBar: {
+  maturityBar: {
     height: 40,
     borderRadius: theme.spacing(1),
     display: 'flex',
@@ -38,7 +37,7 @@ export const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
     backgroundColor: theme.palette.grey[200],
   },
-  freshnessSegment: {
+  maturitySegment: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -97,5 +96,21 @@ export const useStyles = makeStyles(theme => ({
   },
   iconAvatar: {
     backgroundColor: theme.palette.primary.light,
+  },
+  progressRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  progressLabel: {
+    minWidth: 100,
+  },
+  progressBar: {
+    flex: 1,
+  },
+  progressValue: {
+    minWidth: 40,
+    textAlign: 'right' as const,
   },
 }));

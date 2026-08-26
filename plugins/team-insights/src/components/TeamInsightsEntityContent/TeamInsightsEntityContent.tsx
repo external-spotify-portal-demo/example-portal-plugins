@@ -12,85 +12,123 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   Avatar,
 } from '@material-ui/core';
 import DescriptionIcon from '@material-ui/icons/Description';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import WarningIcon from '@material-ui/icons/Warning';
-import ScheduleIcon from '@material-ui/icons/Schedule';
-import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { useStyles } from './TeamInsightsEntityContent.styles';
-import { FRESHNESS_COLORS, getAgeColor } from '../shared/freshnessColors';
+import { useEntity } from '@backstage/plugin-catalog-react';
+import { stringifyEntityRef } from '@backstage/catalog-model';
+
+const MATURITY_COLORS = {
+  production: '#4caf50',
+  experimental: '#ff9800',
+  deprecated: '#f44336',
+} as const;
+
+const MATURITY_LABELS = {
+  production: 'Production',
+  experimental: 'Experimental',
+  deprecated: 'Deprecated',
+} as const;
 
 export const TeamInsightsEntityContent = () => {
   const classes = useStyles();
-  const stats = useTeamInsightsStats();
+  const { entity } = useEntity();
+  const teamRef = stringifyEntityRef(entity);
+  const { stats, loading, error } = useTeamInsightsStats(teamRef);
 
-  const coverage = Math.round((stats.withDocs / stats.totalOwned) * 100) || 0;
+  if (loading) {
+    return (
+      <Box p={4}>
+        <LinearProgress />
+      </Box>
+    );
+  }
 
-  const getFreshnessPercentage = (bucket: '0-30' | '31-90' | '90+') => {
-    const total = Math.max(1, stats.withDocs);
-    return (stats.ages[bucket] / total) * 100;
-  };
+  if (error || !stats) {
+    return (
+      <Box className={classes.emptyState}>
+        <Typography variant="h6">
+          {error ? 'Failed to load team insights' : 'No data available'}
+        </Typography>
+      </Box>
+    );
+  }
+
+  const docsCoverage = stats.docs.total > 0
+    ? Math.round((stats.docs.covered / stats.docs.total) * 100)
+    : 0;
+
+  const maturityTotal = Math.max(
+    1,
+    stats.maturity.production +
+      stats.maturity.experimental +
+      stats.maturity.deprecated,
+  );
 
   return (
     <Grid container spacing={3}>
-      {/* Coverage Card */}
+      {/* Ownership Card */}
       <Grid item xs={12} md={4}>
-        <Card className={classes.coverageCard} elevation={4}>
-          <CardContent className={classes.coverageContent}>
-            <Box className={classes.percentageCircle}>
+        <Card className={classes.ownershipCard} elevation={4}>
+          <CardContent className={classes.ownershipContent}>
+            <Box className={classes.totalCircle}>
               <Typography variant="h2" style={{ fontWeight: 'bold' }}>
-                {coverage}%
+                {stats.ownership.total}
               </Typography>
             </Box>
             <Typography variant="h6" gutterBottom>
-              Documentation Coverage
+              Entities Owned
             </Typography>
-            <Box className={classes.statsRow}>
-              <DescriptionIcon />
-              <Typography variant="body1">
-                <strong>{stats.withDocs}</strong> / {stats.totalOwned} entities
-              </Typography>
-            </Box>
-            <Box mt={2} width="100%">
-              <LinearProgress
-                variant="determinate"
-                value={coverage}
-                style={{
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: 'rgba(255,255,255,0.3)',
-                }}
-              />
+            <Box>
+              {(
+                Object.entries(stats.ownership.byKind) as [string, number][]
+              ).map(
+                ([kind, count]) =>
+                  count > 0 && (
+                    <Box key={kind} className={classes.kindRow}>
+                      <DescriptionIcon fontSize="small" />
+                      <Typography variant="body2">
+                        <strong>{count}</strong> {kind}
+                        {count !== 1 ? 's' : ''}
+                      </Typography>
+                    </Box>
+                  ),
+              )}
             </Box>
           </CardContent>
         </Card>
       </Grid>
 
-      {/* Freshness Card */}
+      {/* Maturity Card */}
       <Grid item xs={12} md={8}>
-        <InfoCard title="Documentation Freshness">
+        <InfoCard title="Software Maturity">
           <Box p={2}>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              Days since last update
+              Lifecycle distribution
             </Typography>
-            <Box className={classes.freshnessBar}>
-              {(['0-30', '31-90', '90+'] as const).map(bucket => {
-                const percentage = getFreshnessPercentage(bucket);
-                const count = stats.ages[bucket];
+            <Box className={classes.maturityBar}>
+              {(
+                Object.entries(MATURITY_COLORS) as [
+                  keyof typeof MATURITY_COLORS,
+                  string,
+                ][]
+              ).map(([stage, color]) => {
+                const count = stats.maturity[stage];
+                const percentage = (count / maturityTotal) * 100;
                 if (percentage === 0) return null;
                 return (
                   <Box
-                    key={bucket}
-                    className={classes.freshnessSegment}
+                    key={stage}
+                    className={classes.maturitySegment}
                     style={{
                       width: `${percentage}%`,
-                      backgroundColor: FRESHNESS_COLORS[bucket],
+                      backgroundColor: color,
                     }}
-                    title={`${bucket} days: ${count} docs`}
+                    title={`${MATURITY_LABELS[stage]}: ${count}`}
                   >
                     {count > 0 && count}
                   </Box>
@@ -98,14 +136,20 @@ export const TeamInsightsEntityContent = () => {
               })}
             </Box>
             <Box className={classes.legendContainer}>
-              {(['0-30', '31-90', '90+'] as const).map(bucket => (
-                <Box key={bucket} className={classes.legendItem}>
+              {(
+                Object.entries(MATURITY_COLORS) as [
+                  keyof typeof MATURITY_COLORS,
+                  string,
+                ][]
+              ).map(([stage, color]) => (
+                <Box key={stage} className={classes.legendItem}>
                   <Box
                     className={classes.legendDot}
-                    style={{ backgroundColor: FRESHNESS_COLORS[bucket] }}
+                    style={{ backgroundColor: color }}
                   />
                   <Typography variant="caption">
-                    {bucket} days: <strong>{stats.ages[bucket]}</strong>
+                    {MATURITY_LABELS[stage]}:{' '}
+                    <strong>{stats.maturity[stage]}</strong>
                   </Typography>
                 </Box>
               ))}
@@ -114,41 +158,57 @@ export const TeamInsightsEntityContent = () => {
         </InfoCard>
       </Grid>
 
-      {/* Missing TechDocs Card */}
+      {/* Documentation Card */}
       <Grid item xs={12} md={6}>
         <InfoCard
-          title="Missing TechDocs"
+          title="Documentation Coverage"
           className={
-            stats.withoutDocsRefs.length === 0
+            stats.docs.missingRefs.length === 0
               ? classes.successCard
               : classes.warningCard
           }
         >
-          {stats.withoutDocsRefs.length === 0 ? (
+          {stats.docs.missingRefs.length === 0 ? (
             <Box className={classes.emptyState}>
               <CheckCircleIcon
                 className={classes.emptyIcon}
                 style={{ color: '#4caf50' }}
               />
               <Typography variant="h6" gutterBottom>
-                All Set!
+                All Documented!
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                All owned entities have TechDocs
+                All {stats.docs.total} entities have TechDocs
               </Typography>
             </Box>
           ) : (
             <Box>
               <Box p={2} pb={1}>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Typography variant="body2">
+                    <strong>{stats.docs.covered}</strong> / {stats.docs.total}{' '}
+                    entities documented
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>{docsCoverage}%</strong>
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={docsCoverage}
+                  style={{ height: 8, borderRadius: 4 }}
+                />
+              </Box>
+              <Box p={2} pt={1}>
                 <Chip
                   icon={<WarningIcon />}
-                  label={`${stats.withoutDocsRefs.length} entities without docs`}
+                  label={`${stats.docs.missingRefs.length} missing docs`}
                   color="secondary"
                   size="small"
                 />
               </Box>
               <List dense>
-                {stats.withoutDocsRefs.map((ref) => (
+                {stats.docs.missingRefs.map(ref => (
                   <ListItem key={ref} className={classes.listItem}>
                     <ListItemIcon>
                       <Avatar
@@ -176,61 +236,53 @@ export const TeamInsightsEntityContent = () => {
         </InfoCard>
       </Grid>
 
-      {/* Stalest Docs Card */}
+      {/* Catalog Completeness Card */}
       <Grid item xs={12} md={6}>
-        <InfoCard title="Stalest Documentation">
-          {stats.stalest.length === 0 ? (
-            <Box className={classes.emptyState}>
-              <TrendingUpIcon className={classes.emptyIcon} />
-              <Typography variant="h6" gutterBottom>
-                No Data Available
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                No documentation found to analyze
-              </Typography>
-            </Box>
-          ) : (
-            <List dense>
-              {stats.stalest.map((item) => (
-                <Box key={item.ref}>
-                  <ListItem className={classes.listItem}>
-                    <ListItemIcon>
-                      <Avatar
-                        className={classes.iconAvatar}
-                        style={{ width: 32, height: 32 }}
-                      >
-                        <ScheduleIcon fontSize="small" />
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Chip
-                          label={item.ref}
-                          size="small"
-                          variant="outlined"
-                          className={classes.codeChip}
-                        />
-                      }
-                      secondary={
-                        <Typography variant="caption" color="textSecondary">
-                          Last updated {item.daysOld} days ago
-                        </Typography>
-                      }
+        <InfoCard title="Catalog Completeness">
+          <Box p={2}>
+            {(
+              [
+                ['Description', stats.completeness.withDescription],
+                ['Tags', stats.completeness.withTags],
+                ['Lifecycle', stats.completeness.withLifecycle],
+              ] as const
+            ).map(([label, count]) => {
+              const pct = stats.completeness.total > 0
+                ? Math.round((count / stats.completeness.total) * 100)
+                : 0;
+              return (
+                <Box key={label} className={classes.progressRow}>
+                  <Typography
+                    variant="body2"
+                    className={classes.progressLabel}
+                  >
+                    {label}
+                  </Typography>
+                  <Box className={classes.progressBar}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={pct}
+                      style={{ height: 8, borderRadius: 4 }}
                     />
-                    <Chip
-                      label={`${item.daysOld}d`}
-                      size="small"
-                      style={{
-                        backgroundColor: getAgeColor(item.daysOld),
-                        color: 'white',
-                      }}
-                    />
-                  </ListItem>
-                  <Divider />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    className={classes.progressValue}
+                  >
+                    <strong>{pct}%</strong>
+                  </Typography>
                 </Box>
-              ))}
-            </List>
-          )}
+              );
+            })}
+            <Typography
+              variant="caption"
+              color="textSecondary"
+              display="block"
+              style={{ marginTop: 8 }}
+            >
+              Out of {stats.completeness.total} entities
+            </Typography>
+          </Box>
         </InfoCard>
       </Grid>
     </Grid>

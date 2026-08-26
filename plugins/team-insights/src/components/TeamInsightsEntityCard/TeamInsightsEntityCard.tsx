@@ -5,103 +5,146 @@ import {
   LinearProgress,
   Typography,
 } from '@material-ui/core';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import WarningIcon from '@material-ui/icons/Warning';
 import { useTeamInsightsStats } from '../../hooks';
-import { FRESHNESS_COLORS, getAgeColor } from '../shared/freshnessColors';
+import { useEntity } from '@backstage/plugin-catalog-react';
+import { stringifyEntityRef } from '@backstage/catalog-model';
+
+const MATURITY_COLORS = {
+  production: '#4caf50',
+  experimental: '#ff9800',
+  deprecated: '#f44336',
+} as const;
 
 export const TeamInsightsEntityCard = () => {
-  const stats = useTeamInsightsStats();
-  const coverage = Math.round((stats.withDocs / stats.totalOwned) * 100) || 0;
-  const topStalest = stats.stalest[0];
+  const { entity } = useEntity();
+  const teamRef = stringifyEntityRef(entity);
+  const { stats, loading, error } = useTeamInsightsStats(teamRef);
+
+  if (loading) {
+    return (
+      <InfoCard title="Team Insights">
+        <Box p={2}><LinearProgress /></Box>
+      </InfoCard>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <InfoCard title="Team Insights">
+        <Box p={2}>
+          <Typography variant="body2" color="textSecondary">
+            {error ? 'Failed to load team insights' : 'No data available'}
+          </Typography>
+        </Box>
+      </InfoCard>
+    );
+  }
+
+  const docsCoverage = stats.docs.total > 0
+    ? Math.round((stats.docs.covered / stats.docs.total) * 100)
+    : 0;
+
+  const completenessScore = stats.completeness.total > 0
+    ? Math.round(
+        ((stats.completeness.withDescription +
+          stats.completeness.withTags +
+          stats.completeness.withLifecycle) /
+          (stats.completeness.total * 3)) *
+          100,
+      )
+    : 0;
 
   return (
     <InfoCard title="Team Insights">
-      {/* Coverage row */}
+      {/* Ownership */}
       <Box mb={2}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+        <Box display="flex" justifyContent="space-between" mb={0.5}>
           <Typography variant="caption" color="textSecondary">
-            Documentation Coverage
+            Entities Owned
           </Typography>
           <Typography variant="caption">
-            <strong>{coverage}%</strong> &mdash; {stats.withDocs} / {stats.totalOwned} entities
+            <strong>{stats.ownership.total}</strong>
+          </Typography>
+        </Box>
+        <Box display="flex" style={{ gap: 4 }} flexWrap="wrap">
+          {(
+            Object.entries(stats.ownership.byKind) as [string, number][]
+          ).map(
+            ([kind, count]) =>
+              count > 0 && (
+                <Chip
+                  key={kind}
+                  label={`${count} ${kind}${count !== 1 ? 's' : ''}`}
+                  size="small"
+                  variant="outlined"
+                />
+              ),
+          )}
+        </Box>
+      </Box>
+
+      {/* Maturity */}
+      <Box mb={2}>
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          display="block"
+          gutterBottom
+        >
+          Software Maturity
+        </Typography>
+        <Box display="flex" style={{ gap: 4 }} flexWrap="wrap">
+          {(
+            Object.entries(MATURITY_COLORS) as [
+              keyof typeof MATURITY_COLORS,
+              string,
+            ][]
+          ).map(
+            ([stage, color]) =>
+              stats.maturity[stage] > 0 && (
+                <Chip
+                  key={stage}
+                  label={`${stats.maturity[stage]} ${stage}`}
+                  size="small"
+                  style={{ backgroundColor: color, color: 'white' }}
+                />
+              ),
+          )}
+        </Box>
+      </Box>
+
+      {/* Documentation */}
+      <Box mb={2}>
+        <Box display="flex" justifyContent="space-between" mb={0.5}>
+          <Typography variant="caption" color="textSecondary">
+            Documentation
+          </Typography>
+          <Typography variant="caption">
+            <strong>{docsCoverage}%</strong>
           </Typography>
         </Box>
         <LinearProgress
           variant="determinate"
-          value={coverage}
+          value={docsCoverage}
           style={{ height: 6, borderRadius: 3 }}
         />
       </Box>
 
-      {/* Freshness row */}
-      <Box mb={2}>
-        <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
-          Freshness
-        </Typography>
-        <Box display="flex" style={{ gap: 12 }}>
-          {(['0-30', '31-90', '90+'] as const).map(bucket => (
-            <Box key={bucket} display="flex" alignItems="center" style={{ gap: 4 }}>
-              <Box
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  backgroundColor: FRESHNESS_COLORS[bucket],
-                }}
-              />
-              <Typography variant="caption">
-                {bucket}: <strong>{stats.ages[bucket]}</strong>
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-
-      {/* Missing TechDocs row */}
-      <Box mb={2}>
-        <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
-          Missing TechDocs
-        </Typography>
-        {stats.withoutDocsRefs.length === 0 ? (
-          <Box display="flex" alignItems="center" style={{ gap: 4 }}>
-            <CheckCircleIcon style={{ color: '#4caf50', fontSize: 16 }} />
-            <Typography variant="caption">All Set!</Typography>
-          </Box>
-        ) : (
-          <Chip
-            icon={<WarningIcon />}
-            label={`${stats.withoutDocsRefs.length} missing`}
-            size="small"
-            color="secondary"
-          />
-        )}
-      </Box>
-
-      {/* Stalest doc row */}
+      {/* Completeness */}
       <Box>
-        <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
-          Stalest Doc
-        </Typography>
-        {!topStalest ? (
+        <Box display="flex" justifyContent="space-between" mb={0.5}>
           <Typography variant="caption" color="textSecondary">
-            No data available
+            Catalog Completeness
           </Typography>
-        ) : (
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="caption" style={{ fontFamily: 'monospace' }}>
-              {topStalest.ref}
-            </Typography>
-            <Chip
-              label={`${topStalest.daysOld}d`}
-              size="small"
-              style={{
-                backgroundColor: getAgeColor(topStalest.daysOld),
-                color: 'white',
-              }}
-            />
-          </Box>
-        )}
+          <Typography variant="caption">
+            <strong>{completenessScore}%</strong>
+          </Typography>
+        </Box>
+        <LinearProgress
+          variant="determinate"
+          value={completenessScore}
+          style={{ height: 6, borderRadius: 3 }}
+        />
       </Box>
     </InfoCard>
   );

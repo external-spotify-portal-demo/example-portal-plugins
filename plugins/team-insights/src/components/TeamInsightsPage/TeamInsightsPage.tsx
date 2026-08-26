@@ -1,4 +1,3 @@
-// plugins/team-insights/src/components/TeamInsightsPage/TeamInsightsPage.tsx
 import { Page, Header, Content } from '@backstage/core-components';
 import {
   Box,
@@ -11,147 +10,161 @@ import {
   TableRow,
   Typography,
 } from '@material-ui/core';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import WarningIcon from '@material-ui/icons/Warning';
-import { FRESHNESS_COLORS } from '../shared/freshnessColors';
-import type { TeamInsightsStats } from '../../hooks';
 import { useApi } from '@backstage/frontend-plugin-api';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { useAsync } from 'react-use';
+import { teamInsightsApiRef } from '../../api';
+import type { TeamInsightsStats } from '../../api';
 
-// Mocked data for demonstration purposes.
-// In a real implementation, this would be fetched from an API based
-// on the actual groups and their owned components.
-const STUB_STATS: TeamInsightsStats[] = [
-  {
-    withDocs: 3,
-    totalOwned: 10,
-    ages: { '0-30': 1, '31-90': 1, '90+': 1 },
-    withoutDocsRefs: ['component:default/foo', 'component:default/bar'],
-    stalest: [{ ref: 'component:default/foo', daysOld: 120 }],
-  },
-  {
-    withDocs: 8,
-    totalOwned: 10,
-    ages: { '0-30': 5, '31-90': 2, '90+': 1 },
-    withoutDocsRefs: [],
-    stalest: [{ ref: 'component:default/baz', daysOld: 95 }],
-  },
-  {
-    withDocs: 0,
-    totalOwned: 10,
-    ages: { '0-30': 0, '31-90': 0, '90+': 0 },
-    withoutDocsRefs: Array.from(
-      { length: 10 },
-      (_, i) => `component:default/c${i}`,
-    ),
-    stalest: [],
-  },
-];
+const MATURITY_COLORS = {
+  production: '#4caf50',
+  experimental: '#ff9800',
+  deprecated: '#f44336',
+} as const;
+
+function MaturityDots({ maturity }: { maturity: TeamInsightsStats['maturity'] }) {
+  return (
+    <Box display="flex" style={{ gap: 6 }}>
+      {(
+        Object.entries(MATURITY_COLORS) as [
+          keyof typeof MATURITY_COLORS,
+          string,
+        ][]
+      ).map(([stage, color]) => (
+        <Box
+          key={stage}
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            backgroundColor: color,
+            opacity: maturity[stage] > 0 ? 1 : 0.2,
+          }}
+          title={`${stage}: ${maturity[stage]}`}
+        />
+      ))}
+    </Box>
+  );
+}
 
 export function TeamInsightsPage() {
-  const catalog = useApi(catalogApiRef);
-
-  const { value: groups } = useAsync(async () => {
-    const entities = await catalog.getEntities({ filter: { kind: 'Group' } });
-    return entities.items
-      .map(e => ({
-        name: e.metadata.name,
-        stats: STUB_STATS[e.metadata.name.length % STUB_STATS.length],
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [catalog]);
+  const api = useApi(teamInsightsApiRef);
+  const { value: teams, loading, error } = useAsync(
+    () => api.getStats(),
+    [api],
+  );
 
   return (
     <Page themeId="tool">
       <Header
         title="Team Insights"
-        subtitle="Documentation health across all teams"
+        subtitle="Health metrics across all teams"
       />
       <Content>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Team</TableCell>
-              <TableCell style={{ width: 220 }}>Coverage</TableCell>
-              <TableCell>Freshness</TableCell>
-              <TableCell>Missing Docs</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {groups?.map(({ name, stats }) => {
-              const coverage =
-                Math.round((stats.withDocs / stats.totalOwned) * 100) || 0;
-              return (
-                <TableRow key={name}>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      style={{ fontFamily: 'monospace' }}
-                    >
-                      {name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Box display="flex" alignItems="center" style={{ gap: 8 }}>
-                      <Box flex={1}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={coverage}
-                          style={{ height: 6, borderRadius: 3 }}
+        {loading && <LinearProgress />}
+        {error && (
+          <Typography color="error">
+            Failed to load team insights: {error.message}
+          </Typography>
+        )}
+        {teams && (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Team</TableCell>
+                <TableCell>Entities</TableCell>
+                <TableCell>Maturity</TableCell>
+                <TableCell style={{ width: 180 }}>Docs Coverage</TableCell>
+                <TableCell style={{ width: 180 }}>Completeness</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {teams
+                .sort((a, b) => a.teamRef.localeCompare(b.teamRef))
+                .map(team => {
+                  const docsPct = team.docs.total > 0
+                    ? Math.round(
+                        (team.docs.covered / team.docs.total) * 100,
+                      )
+                    : 0;
+                  const complPct = team.completeness.total > 0
+                    ? Math.round(
+                        ((team.completeness.withDescription +
+                          team.completeness.withTags +
+                          team.completeness.withLifecycle) /
+                          (team.completeness.total * 3)) *
+                          100,
+                      )
+                    : 0;
+                  const name = team.teamRef.split('/').pop() ?? team.teamRef;
+
+                  return (
+                    <TableRow key={team.teamRef}>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          style={{ fontFamily: 'monospace' }}
+                        >
+                          {name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={team.ownership.total}
+                          size="small"
+                          variant="outlined"
                         />
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        style={{ minWidth: 36, textAlign: 'right' }}
-                      >
-                        {coverage}%
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box display="flex" style={{ gap: 6 }}>
-                      {(['0-30', '31-90', '90+'] as const).map(bucket => (
+                      </TableCell>
+                      <TableCell>
+                        <MaturityDots maturity={team.maturity} />
+                      </TableCell>
+                      <TableCell>
                         <Box
-                          key={bucket}
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: '50%',
-                            backgroundColor: FRESHNESS_COLORS[bucket],
-                            opacity: stats.ages[bucket] > 0 ? 1 : 0.2,
-                          }}
-                          title={`${bucket} days: ${stats.ages[bucket]}`}
-                        />
-                      ))}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {stats.withoutDocsRefs.length === 0 ? (
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        style={{ gap: 4 }}
-                      >
-                        <CheckCircleIcon
-                          style={{ color: '#4caf50', fontSize: 16 }}
-                        />
-                        <Typography variant="caption">All Set!</Typography>
-                      </Box>
-                    ) : (
-                      <Chip
-                        icon={<WarningIcon />}
-                        label={`${stats.withoutDocsRefs.length} missing`}
-                        size="small"
-                        color="secondary"
-                      />
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                          display="flex"
+                          alignItems="center"
+                          style={{ gap: 8 }}
+                        >
+                          <Box flex={1}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={docsPct}
+                              style={{ height: 6, borderRadius: 3 }}
+                            />
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            style={{ minWidth: 36, textAlign: 'right' }}
+                          >
+                            {docsPct}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          style={{ gap: 8 }}
+                        >
+                          <Box flex={1}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={complPct}
+                              style={{ height: 6, borderRadius: 3 }}
+                            />
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            style={{ minWidth: 36, textAlign: 'right' }}
+                          >
+                            {complPct}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        )}
       </Content>
     </Page>
   );
