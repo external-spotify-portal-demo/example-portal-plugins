@@ -27,7 +27,7 @@ export class DatabaseHandler {
   }
 
   async getCount(): Promise<number> {
-    const result = await this.knex<DbRow>(TABLE).count('* as count').first();
+    const result = await this.knex(TABLE).count({ count: '*' }).first();
     return Number(result?.count ?? 0);
   }
 
