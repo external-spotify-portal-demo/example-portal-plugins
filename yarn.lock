@@ -2966,26 +2966,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@backstage/integration@npm:2.0.1"
-  dependencies:
-    "@azure/identity": "npm:^4.0.0"
-    "@azure/storage-blob": "npm:^12.5.0"
-    "@backstage/config": "npm:^1.3.7"
-    "@backstage/errors": "npm:^1.3.0"
-    "@octokit/auth-app": "npm:^4.0.0"
-    "@octokit/rest": "npm:^19.0.3"
-    cross-fetch: "npm:^4.0.0"
-    git-url-parse: "npm:^15.0.0"
-    lodash: "npm:^4.17.21"
-    luxon: "npm:^3.0.0"
-    p-throttle: "npm:^4.1.1"
-  checksum: 10c0/ccb1809e3db6da89e4ae7faf39a7e142b8e1b841741304193bb22a6e07d1d5c0954b8c95b514b49b6f8188264313343796f6f3607084b0c4b28597d836aee50e
-  languageName: node
-  linkType: hard
-
-"@backstage/integration@npm:^2.1.0":
+"@backstage/integration@backstage:^::backstage=1.54.5&npm=2.1.0, @backstage/integration@npm:^2.1.0":
   version: 2.1.0
   resolution: "@backstage/integration@npm:2.1.0"
   dependencies:
@@ -3002,6 +2983,25 @@ __metadata:
     luxon: "npm:^3.0.0"
     p-throttle: "npm:^4.1.1"
   checksum: 10c0/bc1cc00ba4affa782c7127f20b058b371dfd947ab633e64d23922538e12512a9a5bd4207b1228e7affb2139d997191f5b86b3ae61216d71d7f16bb33f8b0e5eb
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@backstage/integration@npm:2.0.1"
+  dependencies:
+    "@azure/identity": "npm:^4.0.0"
+    "@azure/storage-blob": "npm:^12.5.0"
+    "@backstage/config": "npm:^1.3.7"
+    "@backstage/errors": "npm:^1.3.0"
+    "@octokit/auth-app": "npm:^4.0.0"
+    "@octokit/rest": "npm:^19.0.3"
+    cross-fetch: "npm:^4.0.0"
+    git-url-parse: "npm:^15.0.0"
+    lodash: "npm:^4.17.21"
+    luxon: "npm:^3.0.0"
+    p-throttle: "npm:^4.1.1"
+  checksum: 10c0/ccb1809e3db6da89e4ae7faf39a7e142b8e1b841741304193bb22a6e07d1d5c0954b8c95b514b49b6f8188264313343796f6f3607084b0c4b28597d836aee50e
   languageName: node
   linkType: hard
 
@@ -4532,6 +4532,25 @@ __metadata:
     "@backstage/errors": "backstage:^"
     "@backstage/plugin-catalog-common": "backstage:^"
     "@backstage/plugin-catalog-node": "backstage:^"
+  languageName: unknown
+  linkType: soft
+
+"@internal/backstage-plugin-catalog-backend-module-github-custom-properties-processor@workspace:plugins/catalog-backend-module-github-custom-properties-processor":
+  version: 0.0.0-use.local
+  resolution: "@internal/backstage-plugin-catalog-backend-module-github-custom-properties-processor@workspace:plugins/catalog-backend-module-github-custom-properties-processor"
+  dependencies:
+    "@backstage/backend-plugin-api": "backstage:^"
+    "@backstage/backend-test-utils": "backstage:^"
+    "@backstage/catalog-model": "backstage:^"
+    "@backstage/cli": "backstage:^"
+    "@backstage/config": "backstage:^"
+    "@backstage/integration": "backstage:^"
+    "@backstage/plugin-catalog-backend": "backstage:^"
+    "@backstage/plugin-catalog-node": "backstage:^"
+    "@backstage/types": "backstage:^"
+    "@octokit/rest": "npm:^19.0.0"
+    "@types/git-url-parse": "npm:^9.0.0"
+    git-url-parse: "npm:^15.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6412,7 +6431,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/rest@npm:^19.0.3":
+"@octokit/rest@npm:^19.0.0, @octokit/rest@npm:^19.0.3":
   version: 19.0.13
   resolution: "@octokit/rest@npm:19.0.13"
   dependencies:
@@ -8523,6 +8542,13 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:^1"
   checksum: 10c0/f42b616d2c9dbc50352c820db7de182f64ebbfa8dba6fb6c98e5f8f0e2ef3edde0131719d9dc6874803d25ad9ca2d53471d0fec2fbc60a6003a43d015bab72c4
+  languageName: node
+  linkType: hard
+
+"@types/git-url-parse@npm:^9.0.0":
+  version: 9.0.3
+  resolution: "@types/git-url-parse@npm:9.0.3"
+  checksum: 10c0/7335a185ed33921c025428fba62d86208573001f3ec686519bda272a9dfefbf32aba2dbc5c782ca705282f3338e04a45df6548863d26b9616531d45078160b93
   languageName: node
   linkType: hard
 
