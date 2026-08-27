@@ -10,10 +10,8 @@ import {
   TableRow,
   Typography,
 } from '@material-ui/core';
-import { useApi } from '@backstage/frontend-plugin-api';
-import { useAsync } from 'react-use';
-import { teamInsightsApiRef } from '../../api';
-import type { TeamInsightsStats } from '../../api';
+import { useAllTeamInsightsStats } from '../../hooks';
+import type { TeamInsightsStats } from '../../hooks';
 
 const MATURITY_COLORS = {
   production: '#4caf50',
@@ -47,11 +45,7 @@ function MaturityDots({ maturity }: { maturity: TeamInsightsStats['maturity'] })
 }
 
 export function TeamInsightsPage() {
-  const api = useApi(teamInsightsApiRef);
-  const { value: teams, loading, error } = useAsync(
-    () => api.getStats(),
-    [api],
-  );
+  const { stats: teams, loading, error } = useAllTeamInsightsStats();
 
   return (
     <Page themeId="tool">

@@ -40,16 +40,12 @@ export const TeamInsightsEntityContent = () => {
   const teamRef = stringifyEntityRef(entity);
   const { stats, loading, error } = useTeamInsightsStats(teamRef);
 
-  if (loading) {
-    return (
+  if (!stats) {
+    return loading ? (
       <Box p={4}>
         <LinearProgress />
       </Box>
-    );
-  }
-
-  if (error || !stats) {
-    return (
+    ) : (
       <Box className={classes.emptyState}>
         <Typography variant="h6">
           {error ? 'Failed to load team insights' : 'No data available'}

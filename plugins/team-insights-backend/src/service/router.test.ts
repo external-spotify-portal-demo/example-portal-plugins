@@ -60,16 +60,20 @@ describe('router', () => {
     expect(res.body).toEqual([]);
   });
 
-  it('GET /stats/:teamRef returns 404 for unknown team', async () => {
-    const ref = encodeURIComponent('group:default/unknown');
-    const res = await request(app).get(`/stats/${ref}`);
-    expect(res.status).toBe(404);
+  it('GET /stats?teamRef= returns default empty stats for unknown team', async () => {
+    const res = await request(app)
+      .get('/stats')
+      .query({ teamRef: 'group:default/unknown' });
+    expect(res.status).toBe(200);
+    expect(res.body.teamRef).toBe('group:default/unknown');
+    expect(res.body.ownership.total).toBe(0);
+    expect(res.body.docs.missingRefs).toEqual([]);
   });
 
-  it('PUT /stats/:teamRef upserts and returns stats', async () => {
-    const ref = encodeURIComponent('group:default/test-team');
+  it('PUT /stats?teamRef= upserts and returns stats', async () => {
     const res = await request(app)
-      .put(`/stats/${ref}`)
+      .put('/stats')
+      .query({ teamRef: 'group:default/test-team' })
       .send(sampleBody);
 
     expect(res.status).toBe(200);
@@ -77,27 +81,37 @@ describe('router', () => {
     expect(res.body.ownership.total).toBe(10);
   });
 
-  it('GET /stats/:teamRef returns upserted stats', async () => {
-    const ref = encodeURIComponent('group:default/test-team');
-    const res = await request(app).get(`/stats/${ref}`);
+  it('GET /stats?teamRef= returns upserted stats', async () => {
+    const res = await request(app)
+      .get('/stats')
+      .query({ teamRef: 'group:default/test-team' });
     expect(res.status).toBe(200);
     expect(res.body.teamRef).toBe('group:default/test-team');
     expect(res.body.docs.missingRefs).toEqual(['component:default/svc-a']);
   });
 
   it('GET /stats returns all teams', async () => {
-    const ref2 = encodeURIComponent('group:default/other-team');
-    await request(app).put(`/stats/${ref2}`).send(sampleBody);
+    await request(app)
+      .put('/stats')
+      .query({ teamRef: 'group:default/other-team' })
+      .send(sampleBody);
 
     const res = await request(app).get('/stats');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
   });
 
-  it('PUT /stats/:teamRef rejects invalid body', async () => {
-    const ref = encodeURIComponent('group:default/test-team');
+  it('PUT /stats without teamRef returns 400', async () => {
     const res = await request(app)
-      .put(`/stats/${ref}`)
+      .put('/stats')
+      .send(sampleBody);
+    expect(res.status).toBe(400);
+  });
+
+  it('PUT /stats?teamRef= rejects invalid body', async () => {
+    const res = await request(app)
+      .put('/stats')
+      .query({ teamRef: 'group:default/test-team' })
       .send({ bad: 'data' });
     expect(res.status).toBe(400);
   });

@@ -20,21 +20,17 @@ export const TeamInsightsEntityCard = () => {
   const teamRef = stringifyEntityRef(entity);
   const { stats, loading, error } = useTeamInsightsStats(teamRef);
 
-  if (loading) {
-    return (
-      <InfoCard title="Team Insights">
-        <Box p={2}><LinearProgress /></Box>
-      </InfoCard>
-    );
-  }
-
-  if (error || !stats) {
+  if (!stats) {
     return (
       <InfoCard title="Team Insights">
         <Box p={2}>
-          <Typography variant="body2" color="textSecondary">
-            {error ? 'Failed to load team insights' : 'No data available'}
-          </Typography>
+          {loading ? (
+            <LinearProgress />
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              {error ? 'Failed to load team insights' : 'No data available'}
+            </Typography>
+          )}
         </Box>
       </InfoCard>
     );
