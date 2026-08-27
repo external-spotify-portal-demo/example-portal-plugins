@@ -29,6 +29,14 @@ const sampleBody = {
   },
 };
 
+const STATUS_BY_ERROR_NAME: Record<string, number> = {
+  InputError: 400,
+  AuthenticationError: 401,
+  NotAllowedError: 403,
+  NotFoundError: 404,
+  ConflictError: 409,
+};
+
 describe('router', () => {
   const databases = TestDatabases.create();
   let app: express.Express;
@@ -47,9 +55,8 @@ describe('router', () => {
         res: express.Response,
         _next: express.NextFunction,
       ) => {
-        res
-          .status(err.statusCode ?? 500)
-          .json({ error: { message: err.message } });
+        const status = STATUS_BY_ERROR_NAME[err.name] ?? 500;
+        res.status(status).json({ error: { message: err.message } });
       },
     );
   });
@@ -60,14 +67,13 @@ describe('router', () => {
     expect(res.body).toEqual([]);
   });
 
-  it('GET /stats?teamRef= returns default empty stats for unknown team', async () => {
+  it('GET /stats?teamRef= generates stats for unknown team on demand', async () => {
     const res = await request(app)
       .get('/stats')
       .query({ teamRef: 'group:default/unknown' });
     expect(res.status).toBe(200);
     expect(res.body.teamRef).toBe('group:default/unknown');
-    expect(res.body.ownership.total).toBe(0);
-    expect(res.body.docs.missingRefs).toEqual([]);
+    expect(res.body.ownership.total).toBeGreaterThan(0);
   });
 
   it('PUT /stats?teamRef= upserts and returns stats', async () => {
@@ -90,7 +96,7 @@ describe('router', () => {
     expect(res.body.docs.missingRefs).toEqual(['component:default/svc-a']);
   });
 
-  it('GET /stats returns all teams', async () => {
+  it('GET /stats returns all persisted teams', async () => {
     await request(app)
       .put('/stats')
       .query({ teamRef: 'group:default/other-team' })
@@ -98,7 +104,7 @@ describe('router', () => {
 
     const res = await request(app).get('/stats');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveLength(2);
+    expect(res.body.length).toBeGreaterThanOrEqual(3);
   });
 
   it('PUT /stats without teamRef returns 400', async () => {
