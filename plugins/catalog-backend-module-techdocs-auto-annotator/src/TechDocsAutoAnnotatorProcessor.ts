@@ -1,7 +1,6 @@
 import { Entity } from '@backstage/catalog-model';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
-
-const TECHDOCS_ANNOTATION = 'backstage.io/techdocs-ref';
+import { TECHDOCS_ANNOTATION } from '@backstage/plugin-techdocs-common';
 
 export class TechDocsAutoAnnotatorProcessor implements CatalogProcessor {
   constructor(private readonly kinds: string[]) {}

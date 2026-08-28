@@ -1,4 +1,5 @@
 import { Entity } from '@backstage/catalog-model';
+import { TECHDOCS_ANNOTATION } from '@backstage/plugin-techdocs-common';
 import { TechDocsAutoAnnotatorProcessor } from './TechDocsAutoAnnotatorProcessor';
 
 function createEntity(overrides: Partial<Entity> = {}): Entity {
@@ -30,7 +31,7 @@ describe('TechDocsAutoAnnotatorProcessor', () => {
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toEqual({
-      'backstage.io/techdocs-ref': 'dir:.',
+      [TECHDOCS_ANNOTATION]: 'dir:.',
     });
   });
 
@@ -40,14 +41,14 @@ describe('TechDocsAutoAnnotatorProcessor', () => {
       metadata: {
         name: 'my-service',
         annotations: {
-          'backstage.io/techdocs-ref': 'url:https://github.com/org/repo',
+          [TECHDOCS_ANNOTATION]: 'url:https://github.com/org/repo',
         },
       },
     });
 
     const result = await processor.preProcessEntity(entity);
 
-    expect(result.metadata.annotations!['backstage.io/techdocs-ref']).toBe(
+    expect(result.metadata.annotations![TECHDOCS_ANNOTATION]).toBe(
       'url:https://github.com/org/repo',
     );
     expect(result).toBe(entity);
@@ -70,7 +71,7 @@ describe('TechDocsAutoAnnotatorProcessor', () => {
     );
 
     expect(result.metadata.annotations).toEqual({
-      'backstage.io/techdocs-ref': 'dir:.',
+      [TECHDOCS_ANNOTATION]: 'dir:.',
     });
   });
 
@@ -92,13 +93,13 @@ describe('TechDocsAutoAnnotatorProcessor', () => {
       createEntity({ kind: 'User' }),
     );
 
-    expect(component.metadata.annotations?.['backstage.io/techdocs-ref']).toBe(
+    expect(component.metadata.annotations?.[TECHDOCS_ANNOTATION]).toBe(
       'dir:.',
     );
-    expect(api.metadata.annotations?.['backstage.io/techdocs-ref']).toBe(
+    expect(api.metadata.annotations?.[TECHDOCS_ANNOTATION]).toBe(
       'dir:.',
     );
-    expect(system.metadata.annotations?.['backstage.io/techdocs-ref']).toBe(
+    expect(system.metadata.annotations?.[TECHDOCS_ANNOTATION]).toBe(
       'dir:.',
     );
     expect(user).toBe(user);
@@ -120,7 +121,7 @@ describe('TechDocsAutoAnnotatorProcessor', () => {
 
     expect(result.metadata.annotations).toEqual({
       'example.com/custom': 'value',
-      'backstage.io/techdocs-ref': 'dir:.',
+      [TECHDOCS_ANNOTATION]: 'dir:.',
     });
   });
 });

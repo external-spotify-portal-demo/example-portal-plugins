@@ -29,7 +29,8 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "backstage:^",
     "@backstage/catalog-model": "backstage:^",
-    "@backstage/plugin-catalog-node": "backstage:^"
+    "@backstage/plugin-catalog-node": "backstage:^",
+    "@backstage/plugin-techdocs-common": "backstage:^"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "backstage:^",
