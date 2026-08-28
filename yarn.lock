@@ -4580,6 +4580,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/backstage-plugin-catalog-backend-module-techdocs-auto-annotator@workspace:plugins/catalog-backend-module-techdocs-auto-annotator":
+  version: 0.0.0-use.local
+  resolution: "@internal/backstage-plugin-catalog-backend-module-techdocs-auto-annotator@workspace:plugins/catalog-backend-module-techdocs-auto-annotator"
+  dependencies:
+    "@backstage/backend-plugin-api": "backstage:^"
+    "@backstage/backend-test-utils": "backstage:^"
+    "@backstage/catalog-model": "backstage:^"
+    "@backstage/cli": "backstage:^"
+    "@backstage/plugin-catalog-backend": "backstage:^"
+    "@backstage/plugin-catalog-node": "backstage:^"
+  languageName: unknown
+  linkType: soft
+
 "@internal/backstage-plugin-docs-hub@workspace:plugins/docs-hub":
   version: 0.0.0-use.local
   resolution: "@internal/backstage-plugin-docs-hub@workspace:plugins/docs-hub"
