@@ -4634,8 +4634,10 @@ __metadata:
   dependencies:
     "@backstage/backend-plugin-api": "backstage:^"
     "@backstage/backend-test-utils": "backstage:^"
+    "@backstage/catalog-model": "backstage:^"
     "@backstage/cli": "backstage:^"
     "@backstage/errors": "backstage:^"
+    "@backstage/plugin-catalog-node": "backstage:^"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"

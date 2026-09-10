@@ -1,26 +1,41 @@
 import express from 'express';
 import Router from 'express-promise-router';
 import { InputError } from '@backstage/errors';
+import type { HttpAuthService } from '@backstage/backend-plugin-api';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import type { DatabaseHandler } from './DatabaseHandler';
 import type { TeamInsightsStats } from '../types';
 
 export function createRouter(options: {
   database: DatabaseHandler;
+  catalog: CatalogService;
+  httpAuth: HttpAuthService;
 }): express.Router {
-  const { database } = options;
+  const { database, catalog, httpAuth } = options;
   const router = Router();
   router.use(express.json());
 
   router.get('/stats', async (req, res) => {
+    const count = await database.getCount();
+    if (count === 0) {
+      const { credentials } = await httpAuth.credentials(req);
+      const { items: groups } = await catalog.getEntities(
+        { filter: { kind: 'Group', 'spec.type': 'team' } },
+        { credentials },
+      );
+
+      for (const group of groups) {
+        await database.upsert(generateStats(stringifyEntityRef(group)));
+      }
+    }
+
     const teamRef = req.query.teamRef as string | undefined;
     if (teamRef) {
-      let stats = await database.getByTeamRef(teamRef);
-      if (!stats) {
-        stats = generateStats(teamRef);
-        await database.upsert(stats);
-      }
-      return res.json(stats);
+      const stats = await database.getByTeamRef(teamRef);
+      return res.json(stats ?? generateStats(teamRef));
     }
+
     const stats = await database.getAll();
     return res.json(stats);
   });
@@ -68,7 +83,10 @@ function generateStats(teamRef: string): TeamInsightsStats {
   const systems = Math.max(1, total - components - apis - resources);
 
   const productionRatio = 0.4 + ((h >> 4) % 6) * 0.1;
-  const production = Math.min(total, Math.max(1, Math.round(total * productionRatio)));
+  const production = Math.min(
+    total,
+    Math.max(1, Math.round(total * productionRatio)),
+  );
   const remaining = total - production;
   const experimental = Math.round(remaining * 0.7);
   const deprecated = remaining - experimental;
@@ -77,8 +95,9 @@ function generateStats(teamRef: string): TeamInsightsStats {
   const covered = Math.min(total, Math.max(0, Math.round(total * docsRatio)));
   const missing = total - covered;
   const teamName = teamRef.split('/').pop() ?? 'unknown';
-  const missingRefs = Array.from({ length: missing }, (_, i) =>
-    `component:default/${teamName}-svc-${i + 1}`,
+  const missingRefs = Array.from(
+    { length: missing },
+    (_, i) => `component:default/${teamName}-svc-${i + 1}`,
   );
 
   const descRatio = 0.5 + ((h >> 12) % 5) * 0.1;
@@ -89,7 +108,12 @@ function generateStats(teamRef: string): TeamInsightsStats {
     teamRef,
     ownership: {
       total,
-      byKind: { component: components, api: apis, resource: resources, system: systems },
+      byKind: {
+        component: components,
+        api: apis,
+        resource: resources,
+        system: systems,
+      },
     },
     maturity: { production, experimental, deprecated },
     docs: { covered, total, missingRefs },

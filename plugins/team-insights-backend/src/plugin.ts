@@ -3,6 +3,7 @@ import {
   createBackendPlugin,
   resolvePackagePath,
 } from '@backstage/backend-plugin-api';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { DatabaseHandler } from './service/DatabaseHandler';
 import { createRouter } from './service/router';
 
@@ -19,13 +20,15 @@ export const teamInsightsBackendPlugin = createBackendPlugin({
         logger: coreServices.logger,
         database: coreServices.database,
         httpRouter: coreServices.httpRouter,
+        catalog: catalogServiceRef,
+        httpAuth: coreServices.httpAuth,
       },
-      async init({ logger, database, httpRouter }) {
+      async init({ logger, database, httpRouter, catalog, httpAuth }) {
         const knex = await database.getClient();
         await knex.migrate.latest({ directory: migrationsDir });
 
         const handler = new DatabaseHandler(knex);
-        const router = createRouter({ database: handler });
+        const router = createRouter({ database: handler, catalog, httpAuth });
 
         httpRouter.use(router);
 

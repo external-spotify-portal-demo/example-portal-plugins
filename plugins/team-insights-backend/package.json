@@ -25,7 +25,9 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "backstage:^",
+    "@backstage/catalog-model": "backstage:^",
     "@backstage/errors": "backstage:^",
+    "@backstage/plugin-catalog-node": "backstage:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "knex": "^3.0.0"
