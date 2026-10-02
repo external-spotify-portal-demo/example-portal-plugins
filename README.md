@@ -20,3 +20,7 @@ This repository is a [Backstage](https://backstage.io) Open Source app, containi
 We recommend using [Portal Studio](https://backstage.spotify.com/docs/portal/portal-plugins/portal-studio) to try these plugins in Spotify Portal. Portal Studio lets you develop and preview plugins locally without needing a full backend setup.
 
 We don't maintain an example app or backend for open source Backstage, but you're welcome to bring the plugins into your own Backstage instance.
+
+## Hello Demo Session
+
+Hello demo session! 👋
