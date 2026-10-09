@@ -19,7 +19,11 @@ const MATURITY_COLORS = {
   deprecated: '#f44336',
 } as const;
 
-function MaturityDots({ maturity }: { maturity: TeamInsightsStats['maturity'] }) {
+function MaturityDots({
+  maturity,
+}: {
+  maturity: TeamInsightsStats['maturity'];
+}) {
   return (
     <Box display="flex" style={{ gap: 6 }}>
       {(
@@ -75,20 +79,20 @@ export function TeamInsightsPage() {
               {teams
                 .sort((a, b) => a.teamRef.localeCompare(b.teamRef))
                 .map(team => {
-                  const docsPct = team.docs.total > 0
-                    ? Math.round(
-                        (team.docs.covered / team.docs.total) * 100,
-                      )
-                    : 0;
-                  const complPct = team.completeness.total > 0
-                    ? Math.round(
-                        ((team.completeness.withDescription +
-                          team.completeness.withTags +
-                          team.completeness.withLifecycle) /
-                          (team.completeness.total * 3)) *
-                          100,
-                      )
-                    : 0;
+                  const docsPct =
+                    team.docs.total > 0
+                      ? Math.round((team.docs.covered / team.docs.total) * 100)
+                      : 0;
+                  const complPct =
+                    team.completeness.total > 0
+                      ? Math.round(
+                          ((team.completeness.withDescription +
+                            team.completeness.withTags +
+                            team.completeness.withLifecycle) /
+                            (team.completeness.total * 3)) *
+                            100,
+                        )
+                      : 0;
                   const name = team.teamRef.split('/').pop() ?? team.teamRef;
 
                   return (
