@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "22 || 24"
+    "node": "24"
   },
   "scripts": {
     "start": "backstage-cli repo start",
@@ -27,7 +27,18 @@
       "new": {
         "globals": {
           "license": "UNLICENSED"
-        }
+        },
+        "templates": [
+          "@backstage/cli-module-new/templates/frontend-plugin",
+          "@backstage/cli-module-new/templates/frontend-plugin-module",
+          "@backstage/cli-module-new/templates/backend-plugin",
+          "@backstage/cli-module-new/templates/backend-plugin-module",
+          "@backstage/cli-module-new/templates/plugin-web-library",
+          "@backstage/cli-module-new/templates/plugin-node-library",
+          "@backstage/cli-module-new/templates/plugin-common-library",
+          "@backstage/cli-module-new/templates/scaffolder-backend-module",
+          "@spotify/backstage-plugin-soundcheck-node/templates/soundcheck-integration-module"
+        ]
       }
     }
   },
@@ -43,6 +54,8 @@
     "@backstage/e2e-test-utils": "backstage:^",
     "@jest/environment-jsdom-abstract": "^30.0.0",
     "@playwright/test": "^1.32.3",
+    "@spotify/backstage-plugin-soundcheck-node": "^0.15.1",
+    "@spotify/portal-cli": "^0.4.4",
     "@types/jest": "^30.0.0",
     "jest": "^30.2.0",
     "jsdom": "^27.1.0",
