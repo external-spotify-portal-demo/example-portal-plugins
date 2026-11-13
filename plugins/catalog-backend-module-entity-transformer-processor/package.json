@@ -1,8 +1,8 @@
 {
-  "name": "@internal/backstage-plugin-catalog-backend-module-entity-enricher-processor",
+  "name": "@internal/backstage-plugin-catalog-backend-module-entity-transformer-processor",
   "version": "0.2.0",
   "license": "UNLICENSED",
-  "description": "The entity-enricher-processor backend module for the catalog plugin.",
+  "description": "The entity-transformer-processor backend module for the catalog plugin.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {

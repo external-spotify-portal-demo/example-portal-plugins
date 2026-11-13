@@ -1,12 +1,12 @@
 # Portal Plugins Example
 
-This repository is a [Backstage](https://backstage.io) Open Source app, containing a set of plugins that are compatible with [Spotify Portal](https://backstage.spotify.com/products/portal/).
+This repository is a [Backstage](https://backstage.io) Open Source app, containing a set of plugins that are compatible with [Spotify Portal](https://portal.spotify.com).
 
 ## Plugins
 
 - [catalog-backend-module-allowed-entity-origin-processor](plugins/catalog-backend-module-allowed-entity-origin-processor): A catalog processor that restricts entity ingestion based on kind, type, and source origin location.
 - [catalog-backend-module-azure-devops-entity-provider](plugins/catalog-backend-module-azure-devops-entity-provider): A catalog provider that creates `Component` entities based on Azure DevOps repositories.
-- [catalog-backend-module-entity-enricher-processor](plugins/catalog-backend-module-entity-enricher-processor): A catalog processor that enriches entities with new field values — annotations, labels, or spec fields — using JSONata expressions defined in configuration.
+- [catalog-backend-module-entity-transformer-processor](plugins/catalog-backend-module-entity-transformer-processor): A catalog processor that sets annotations, labels, or spec fields on entities using configurable [JSONata](https://jsonata.org/) rules and entity filters.
 - [catalog-backend-module-kubernetes-selector](plugins/catalog-backend-module-kubernetes-selector): A catalog processor that automatically sets the `backstage.io/kubernetes-label-selector` annotation on `Component` entities.
 - [catalog-backend-module-github-custom-properties-processor](plugins/catalog-backend-module-github-custom-properties-processor): A catalog processor that enriches `Component` entities with metadata from GitHub repository custom properties (e.g. owner, type, lifecycle).
 - [catalog-backend-module-playground-kind](plugins/catalog-backend-module-playground-kind): A catalog processor that extends the catalog model with a `Playground` entity kind.

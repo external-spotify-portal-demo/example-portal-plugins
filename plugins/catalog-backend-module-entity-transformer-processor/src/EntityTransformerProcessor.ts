@@ -1,8 +1,9 @@
-import { Entity } from '@backstage/catalog-model';
+import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import {
   evaluateFilterPredicate,
   FilterPredicate,
 } from '@backstage/filter-predicates';
+import { LoggerService } from '@backstage/backend-plugin-api';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import jsonataModule from 'jsonata';
 
@@ -19,6 +20,7 @@ const jsonata = (
  * Format: space-separated conditions of `key:value`.
  * - `kind:User` → equality match
  * - `metadata.annotations.github.com/user-login:$exists` → existence check
+ * - `kind:Component,API` → matches any of the comma-separated values
  *
  * All conditions are AND-combined.
  */
@@ -38,6 +40,8 @@ export function parseFilterString(filter: string): FilterPredicate {
 
     if (value === '$exists') {
       conditions[key] = { $exists: true };
+    } else if (value.includes(',')) {
+      conditions[key] = { $in: value.split(',').filter(Boolean) };
     } else {
       conditions[key] = value;
     }
@@ -46,48 +50,84 @@ export function parseFilterString(filter: string): FilterPredicate {
   return conditions as FilterPredicate;
 }
 
-export interface EnricherRule {
+export interface TransformerRule {
   path: string;
   key?: string;
   value: string;
-  filter?: FilterPredicate;
+  filter?: FilterPredicate | string;
 }
 
-export class EntityEnricherProcessor implements CatalogProcessor {
+export class EntityTransformerProcessor implements CatalogProcessor {
   private readonly compiled: Array<{
-    rule: EnricherRule;
+    rule: TransformerRule;
+    filter?: FilterPredicate;
     expression: jsonataModule.Expression;
   }>;
 
-  constructor(rules: EnricherRule[]) {
+  private readonly logger?: LoggerService;
+
+  constructor(
+    rules: TransformerRule[],
+    options: { logger?: LoggerService } = {},
+  ) {
+    this.logger = options.logger;
     this.compiled = rules.map(rule => {
+      let filter: FilterPredicate | undefined;
+      try {
+        filter =
+          typeof rule.filter === 'string'
+            ? parseFilterString(rule.filter)
+            : rule.filter;
+      } catch (err: any) {
+        throw new Error(
+          `Failed to parse filter for "${rule.key ?? rule.path}": ${
+            err.message
+          }`,
+        );
+      }
+
       try {
         return {
           rule,
+          filter,
           expression: jsonata(rule.value),
         };
       } catch (err: any) {
         const message = err?.message ?? JSON.stringify(err);
         throw new Error(
-          `Failed to compile JSONata expression for "${rule.key ?? rule.path}": ${message}`,
+          `Failed to compile JSONata expression for "${
+            rule.key ?? rule.path
+          }": ${message}`,
         );
       }
     });
   }
 
   getProcessorName(): string {
-    return 'EntityEnricherProcessor';
+    return 'EntityTransformerProcessor';
   }
 
   async preProcessEntity(entity: Entity): Promise<Entity> {
     let result = entity;
 
-    for (const { rule, expression } of this.compiled) {
-      if (rule.filter && !evaluateFilterPredicate(rule.filter, entity)) {
+    for (const { rule, filter, expression } of this.compiled) {
+      if (filter && !evaluateFilterPredicate(filter, entity)) {
         continue;
       }
 
-      const resolved = await expression.evaluate(entity);
+      let resolved;
+      try {
+        resolved = await expression.evaluate(entity);
+      } catch (err: any) {
+        const message = err?.message ?? JSON.stringify(err);
+        const code = err?.code ? `${err.code}: ` : '';
+        this.logger?.warn(
+          `Skipping rule "${rule.key ?? rule.path}" on ${stringifyEntityRef(
+            entity,
+          )}: failed to evaluate JSONata expression: ${code}${message}`,
+        );
+        continue;
+      }
       if (resolved === undefined || resolved === null) {
         continue;
       }
@@ -99,7 +139,11 @@ export class EntityEnricherProcessor implements CatalogProcessor {
     return result;
   }
 
-  private applyRule(entity: Entity, rule: EnricherRule, value: string): Entity {
+  private applyRule(
+    entity: Entity,
+    rule: TransformerRule,
+    value: string,
+  ): Entity {
     if (rule.key) {
       return this.applyMapField(entity, rule.path, rule.key, value);
     }

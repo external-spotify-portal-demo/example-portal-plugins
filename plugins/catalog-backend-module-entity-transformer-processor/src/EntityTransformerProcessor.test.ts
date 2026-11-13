@@ -1,5 +1,10 @@
 import { Entity } from '@backstage/catalog-model';
-import { EntityEnricherProcessor, EnricherRule, parseFilterString } from './EntityEnricherProcessor';
+import { mockServices } from '@backstage/backend-test-utils';
+import {
+  EntityTransformerProcessor,
+  TransformerRule,
+  parseFilterString,
+} from './EntityTransformerProcessor';
 
 function createEntity(overrides: Partial<Entity> = {}): Entity {
   return {
@@ -31,9 +36,7 @@ describe('parseFilterString', () => {
 
   it('parses $exists as an existence check', () => {
     expect(
-      parseFilterString(
-        'metadata.annotations.github.com/user-login:$exists',
-      ),
+      parseFilterString('metadata.annotations.github.com/user-login:$exists'),
     ).toEqual({
       'metadata.annotations.github.com/user-login': { $exists: true },
     });
@@ -50,6 +53,12 @@ describe('parseFilterString', () => {
     });
   });
 
+  it('parses comma-separated values as $in', () => {
+    expect(parseFilterString('kind:Component,API')).toEqual({
+      kind: { $in: ['Component', 'API'] },
+    });
+  });
+
   it('throws on invalid token without colon', () => {
     expect(() => parseFilterString('invalid')).toThrow(
       'expected "key:value" format',
@@ -57,21 +66,21 @@ describe('parseFilterString', () => {
   });
 });
 
-describe('EntityEnricherProcessor', () => {
+describe('EntityTransformerProcessor', () => {
   it('returns the correct processor name', () => {
-    const processor = new EntityEnricherProcessor([]);
-    expect(processor.getProcessorName()).toBe('EntityEnricherProcessor');
+    const processor = new EntityTransformerProcessor([]);
+    expect(processor.getProcessorName()).toBe('EntityTransformerProcessor');
   });
 
   it('sets an annotation from a JSONata expression', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/owner-name',
         value: "$substringAfter(spec.owner, 'user:default/')",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toEqual({
@@ -80,27 +89,27 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('sets a label from a JSONata expression', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.labels',
         key: 'team',
         value: "$substringAfter(spec.owner, 'user:default/')",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.labels).toEqual({ team: 'jdoe' });
   });
 
   it('sets a direct spec field', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'spec.lifecycle',
         value: "'production'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const entity = createEntity({
       spec: {
         type: 'service',
@@ -113,14 +122,14 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('overwrites an existing annotation', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/existing',
         value: "'new-value'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const entity = createEntity({
       metadata: {
         name: 'my-service',
@@ -135,34 +144,34 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('overwrites an existing direct field', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'spec.lifecycle',
         value: "'production'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect((result.spec as any).lifecycle).toBe('production');
   });
 
   it('skips a rule when the expression evaluates to undefined', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/missing',
         value: 'spec.nonExistentField',
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toBeUndefined();
   });
 
   it('filters by entity kind', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/user-only',
@@ -170,14 +179,14 @@ describe('EntityEnricherProcessor', () => {
         filter: { kind: 'User' },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toBeUndefined();
   });
 
   it('matches filter values case-insensitively', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/matched',
@@ -185,7 +194,7 @@ describe('EntityEnricherProcessor', () => {
         filter: { kind: 'component' },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toEqual({
@@ -194,7 +203,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('filters with $exists to check field presence', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/has-owner',
@@ -202,7 +211,7 @@ describe('EntityEnricherProcessor', () => {
         filter: { 'spec.owner': { $exists: true } },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const withOwner = await processor.preProcessEntity(createEntity());
     expect(withOwner.metadata.annotations).toEqual({
@@ -216,7 +225,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('skips when a required annotation is missing', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
@@ -227,7 +236,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const withoutAnnotation: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -243,7 +252,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('combines multiple filter conditions with AND', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/matched',
@@ -254,7 +263,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const service = await processor.preProcessEntity(createEntity());
     expect(service.metadata.annotations).toEqual({
@@ -268,7 +277,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('supports $in for multiple allowed values', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/matched',
@@ -278,7 +287,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const service = await processor.preProcessEntity(createEntity());
     expect(service.metadata.annotations).toEqual({
@@ -292,7 +301,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('supports $not filter', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/not-user',
@@ -300,7 +309,7 @@ describe('EntityEnricherProcessor', () => {
         filter: { $not: { kind: 'User' } },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const component = await processor.preProcessEntity(createEntity());
     expect(component.metadata.annotations).toEqual({
@@ -314,7 +323,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('applies multiple rules in order', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/first',
@@ -326,7 +335,7 @@ describe('EntityEnricherProcessor', () => {
         value: "'two'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toEqual({
@@ -336,14 +345,14 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('supports string concatenation in JSONata', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
         value: "$substringAfter(spec.owner, 'user:default/') & '@spotify.com'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(result.metadata.annotations).toEqual({
@@ -352,14 +361,14 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('preserves existing annotations when adding new ones', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/new',
         value: "'new-value'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const entity = createEntity({
       metadata: {
         name: 'my-service',
@@ -375,7 +384,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('passes through entities unchanged when no rules are configured', async () => {
-    const processor = new EntityEnricherProcessor([]);
+    const processor = new EntityTransformerProcessor([]);
     const entity = createEntity();
     const result = await processor.preProcessEntity(entity);
 
@@ -383,7 +392,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('transforms github login to email with filter', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
@@ -395,7 +404,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const entity: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -414,7 +423,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('skips transform when github login annotation is missing', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
@@ -426,7 +435,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const entity: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -442,7 +451,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('skips transform for non-User entities', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
@@ -454,7 +463,7 @@ describe('EntityEnricherProcessor', () => {
         },
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
     const result = await processor.preProcessEntity(createEntity());
 
     expect(
@@ -463,7 +472,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('supports string filter with kind match', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/matched',
@@ -471,7 +480,7 @@ describe('EntityEnricherProcessor', () => {
         filter: parseFilterString('kind:User'),
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const user: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -488,7 +497,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('supports string filter with $exists check', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/has-login',
@@ -498,7 +507,7 @@ describe('EntityEnricherProcessor', () => {
         ),
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const withLogin: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -532,7 +541,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('README example: extracts owner-name annotation from spec.owner', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/owner-name',
@@ -540,7 +549,7 @@ describe('EntityEnricherProcessor', () => {
         value: '$substringAfter(spec.owner, "group:default/")',
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const input: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -571,7 +580,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('README example: skips entities without spec.owner', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/owner-name',
@@ -579,7 +588,7 @@ describe('EntityEnricherProcessor', () => {
         value: '$substringAfter(spec.owner, "group:default/")',
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const input: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -594,7 +603,7 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('README example: derives microsoft email from github login', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'microsoft.com/email',
@@ -605,7 +614,7 @@ describe('EntityEnricherProcessor', () => {
           '$replace($trim($replace(metadata.annotations.`github.com/user-login`, /am$/, "")), "-", ".") & "@example.com"',
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const input: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -634,14 +643,14 @@ describe('EntityEnricherProcessor', () => {
   });
 
   it('applies rule when no filter is specified', async () => {
-    const rules: EnricherRule[] = [
+    const rules: TransformerRule[] = [
       {
         path: 'metadata.annotations',
         key: 'example.com/all',
         value: "'applied'",
       },
     ];
-    const processor = new EntityEnricherProcessor(rules);
+    const processor = new EntityTransformerProcessor(rules);
 
     const component = await processor.preProcessEntity(createEntity());
     const user = await processor.preProcessEntity(
@@ -650,5 +659,70 @@ describe('EntityEnricherProcessor', () => {
 
     expect(component.metadata.annotations!['example.com/all']).toBe('applied');
     expect(user.metadata.annotations!['example.com/all']).toBe('applied');
+  });
+
+  it('strips the group owner namespace for kinds matched by a comma-separated string filter', async () => {
+    const rules: TransformerRule[] = [
+      {
+        path: 'spec.owner',
+        filter: 'kind:component,domain,system,template spec.owner:$exists',
+        value:
+          '($o := spec.owner; $kind := $contains($o, ":") ? $substringBefore($o, ":") : "group"; ($kind = "group" and $contains($o, "/")) ? ($contains($o, ":") ? "group:" : "") & $substringAfter($o, "/"))',
+      },
+    ];
+    const processor = new EntityTransformerProcessor(rules);
+    const ownerOf = async (kind: string, owner?: string) => {
+      const result = await processor.preProcessEntity(
+        createEntity({ kind, spec: owner ? { owner } : {} }),
+      );
+      return (result.spec as any).owner;
+    };
+
+    expect(await ownerOf('Component', 'group:custom/a')).toBe('group:a');
+    expect(await ownerOf('Domain', 'group:custom/a')).toBe('group:a');
+    expect(await ownerOf('System', 'custom/a')).toBe('a');
+    expect(await ownerOf('Template', 'group:custom/a')).toBe('group:a');
+    expect(await ownerOf('Template')).toBeUndefined();
+    expect(await ownerOf('API', 'group:custom/a')).toBe('group:custom/a');
+    expect(await ownerOf('Component', 'group:a')).toBe('group:a');
+    expect(await ownerOf('Component', 'user:custom/bob')).toBe(
+      'user:custom/bob',
+    );
+  });
+
+  it('skips a rule and logs a warning when the expression fails to evaluate', async () => {
+    const logger = mockServices.logger.mock();
+    const rules: TransformerRule[] = [
+      {
+        path: 'spec.owner',
+        value: '$contains(spec.owner, ":") ? "x"',
+      },
+      {
+        path: 'spec.lifecycle',
+        value: "'production'",
+      },
+    ];
+    const processor = new EntityTransformerProcessor(rules, { logger });
+
+    const result = await processor.preProcessEntity(
+      createEntity({ spec: { owner: 123 } }),
+    );
+
+    expect((result.spec as any).owner).toBe(123);
+    expect((result.spec as any).lifecycle).toBe('production');
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Skipping rule "spec.owner" on component:default/my-service: failed to evaluate JSONata expression: T0410: Argument 1 of function "contains" does not match function signature',
+    );
+  });
+
+  it('reports an invalid string filter as a filter error, not a JSONata error', () => {
+    expect(
+      () =>
+        new EntityTransformerProcessor([
+          { path: 'spec.owner', value: "'x'", filter: '($o := spec.owner' },
+        ]),
+    ).toThrow(
+      'Failed to parse filter for "spec.owner": Invalid filter token "($o": expected "key:value" format',
+    );
   });
 });

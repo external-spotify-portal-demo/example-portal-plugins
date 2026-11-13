@@ -1,6 +1,6 @@
-# Catalog Module: Entity Enricher Processor
+# Catalog Module: Entity Transformer Processor
 
-A Backstage catalog processor that enriches entities with new field values — annotations, labels, or spec fields — using [JSONata](https://jsonata.org/) expressions defined in `app-config.yaml`. Entity filtering uses the standard Backstage `FilterPredicate` format from `@backstage/filter-predicates`.
+A Backstage catalog processor that transforms entities by setting or overwriting field values — annotations, labels, or spec fields — using [JSONata](https://jsonata.org/) expressions defined in `app-config.yaml`. Entity filtering uses the standard Backstage `FilterPredicate` format from `@backstage/filter-predicates`.
 
 ## Overview
 
@@ -11,19 +11,19 @@ During catalog processing, each entity is evaluated against the configured rules
 You can try out the module via [Portal Studio](https://backstage.spotify.com/docs/portal/portal-plugins/portal-studio) from the root of the repository:
 
 ```sh
-npx @spotify/portal-cli@latest studio start --instance <your-instance-name> plugins/catalog-backend-module-entity-enricher-processor
+npx @spotify/portal-cli@latest studio start --instance <your-instance-name> plugins/catalog-backend-module-entity-transformer-processor
 ```
 
 Since this is a catalog backend module, Portal Studio will start a local catalog. You will need to configure catalog locations manually in your `app-config.local.yaml` and will not see entities from the production Portal instance.
 
-Create an `app-config.local.yaml` at the repo root with a catalog location and enrichment rules. This example rule takes a Component's `spec.owner` (e.g. `group:default/platform`) and adds an `example.com/owner-name` annotation with just the team name (e.g. `platform`):
+Create an `app-config.local.yaml` at the repo root with a catalog location and transformation rules. This example rule takes a Component's `spec.owner` (e.g. `group:default/platform`) and adds an `example.com/owner-name` annotation with just the team name (e.g. `platform`):
 
 ```yaml
 catalog:
   locations:
     - type: url
       target: https://github.com/my-org/my-repo/blob/main/catalog-info.yaml
-  entityEnricher:
+  entityTransformer:
     rules:
       - path: metadata.annotations
         key: example.com/owner-name
@@ -61,18 +61,18 @@ Add the module to your backend in `packages/backend/src/index.ts`:
 ```ts
 backend.add(
   import(
-    '@internal/backstage-plugin-catalog-backend-module-entity-enricher-processor'
+    '@internal/backstage-plugin-catalog-backend-module-entity-transformer-processor'
   ),
 );
 ```
 
 ## Configuration
 
-Define enrichment rules under `catalog.entityEnricher.rules` in your `app-config.yaml`:
+Define transformation rules under `catalog.entityTransformer.rules` in your `app-config.yaml`:
 
 ```yaml
 catalog:
-  entityEnricher:
+  entityTransformer:
     rules:
       # Derive a Microsoft email from a GitHub login
       - path: metadata.annotations
@@ -106,9 +106,12 @@ catalog:
 
 If no rules are configured, the processor is a no-op.
 
+> **Deprecated:** rules under `catalog.entityEnricher.rules` (the module's previous name) are still read and applied before `catalog.entityTransformer.rules`, with a deprecation warning at startup. Move them to `catalog.entityTransformer.rules`.
+
 ### Behavior
 
 - If the JSONata expression evaluates to `undefined` or `null`, the rule is skipped.
+- If the JSONata expression throws while evaluating (e.g. a function receives the wrong type), a warning is logged with the rule and entity ref, and the rule is skipped. The entity and the remaining rules are still processed.
 - If the target field/key already has a value, it **is** overwritten by the new value.
 - For map targets (`metadata.annotations`, `metadata.labels`), only the specified `key` is set — all other existing entries in the map are preserved.
 - For direct field targets (`spec.lifecycle`, `spec.owner`), the field is replaced entirely.
@@ -131,6 +134,9 @@ filter: "kind:User metadata.annotations.github.com/user-login:$exists"
 
 # Kind + type
 filter: "kind:Component spec.type:service"
+
+# Any of several values (comma-separated)
+filter: "kind:Component,API"
 ```
 
 #### Object format (advanced)

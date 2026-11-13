@@ -5318,9 +5318,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/backstage-plugin-catalog-backend-module-entity-enricher-processor@workspace:plugins/catalog-backend-module-entity-enricher-processor":
+"@internal/backstage-plugin-catalog-backend-module-entity-transformer-processor@workspace:plugins/catalog-backend-module-entity-transformer-processor":
   version: 0.0.0-use.local
-  resolution: "@internal/backstage-plugin-catalog-backend-module-entity-enricher-processor@workspace:plugins/catalog-backend-module-entity-enricher-processor"
+  resolution: "@internal/backstage-plugin-catalog-backend-module-entity-transformer-processor@workspace:plugins/catalog-backend-module-entity-transformer-processor"
   dependencies:
     "@backstage/backend-plugin-api": "backstage:^"
     "@backstage/backend-test-utils": "backstage:^"
@@ -5392,7 +5392,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/backstage-plugin-docs-hub@workspace:^, @internal/backstage-plugin-docs-hub@workspace:plugins/docs-hub":
+"@internal/backstage-plugin-docs-hub@workspace:plugins/docs-hub":
   version: 0.0.0-use.local
   resolution: "@internal/backstage-plugin-docs-hub@workspace:plugins/docs-hub"
   dependencies:
@@ -5476,7 +5476,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/plugin-team-insights@workspace:^, @internal/plugin-team-insights@workspace:plugins/team-insights":
+"@internal/plugin-team-insights@workspace:plugins/team-insights":
   version: 0.0.0-use.local
   resolution: "@internal/plugin-team-insights@workspace:plugins/team-insights"
   dependencies:
@@ -11369,15 +11369,6 @@ __metadata:
   checksum: 10c0/57b06ae984bc32a0d22592c87384cd88fe4511b1dd7581497831c56d41939c8a001b28e7b853e1450f2bf61992dfcaa8ae2d0d161a0a90c4fb631ef07098fbac
   languageName: node
   linkType: hard
-
-"app@workspace:packages/app":
-  version: 0.0.0-use.local
-  resolution: "app@workspace:packages/app"
-  dependencies:
-    "@internal/backstage-plugin-docs-hub": "workspace:^"
-    "@internal/plugin-team-insights": "workspace:^"
-  languageName: unknown
-  linkType: soft
 
 "append-field@npm:^1.0.0":
   version: 1.0.0
